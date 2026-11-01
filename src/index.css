@@ -1,0 +1,82 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-brush: 'Permanent Marker', 'Inter Variable', cursive;
+  --color-ink: #050505;
+  --color-coal: #111111;
+  --color-line: #2b2b2b;
+  --color-bone: #f4f1ea;
+  --color-ash: #a9a6a0;
+  --color-sun-1: #f2a24f;
+  --color-sun-2: #e8472a;
+  --color-sun-3: #2a86cf;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-family: var(--font-sans);
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-sun-1);
+  outline-offset: 3px;
+}
+
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+}
+
+.stitch-line {
+  background-image: repeating-linear-gradient(90deg, currentColor 0 14px, transparent 14px 24px);
+}
+
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px #6a6a6a;
+}
+
+.marquee {
+  animation: marquee var(--marquee-time, 30s) linear infinite;
+}
+.marquee-reverse {
+  animation-direction: reverse;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.wa-pulse::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1px solid var(--color-bone);
+  animation: wa-pulse 2.4s ease-out infinite;
+}
+@keyframes wa-pulse {
+  to {
+    transform: scale(1.08, 1.35);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .marquee,
+  .wa-pulse::before {
+    animation: none;
+  }
+}
