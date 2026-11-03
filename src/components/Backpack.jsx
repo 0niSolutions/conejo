@@ -5,7 +5,7 @@ import { Stitch } from './ui'
 // Mochila ilustrada con el logo de parche: ocupa el lugar del buzo del mockup.
 export default function Backpack({ play }) {
   return (
-    <svg viewBox="0 0 500 600" className="size-full overflow-visible" role="img" aria-label="Mochila personalizada con el logo de Conejo.08">
+    <svg viewBox="0 0 500 600" className="size-full overflow-visible" role="img" aria-label="Mochila con el logo de Conejo">
       <defs>
         <linearGradient id="bp-body" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#3f3f3f" />
@@ -45,6 +45,8 @@ export default function Backpack({ play }) {
         transition={{ type: 'spring', stiffness: 120, damping: 13, delay: 1.2 }}
       >
         <Logo mono x="164" y="340" width="172" height="172" />
+        {/* Copia a color encima: aparece al pasar el mouse por el logo. */}
+        <Logo aria-hidden="true" x="164" y="340" width="172" height="172" className="pointer-events-auto opacity-0 transition-opacity duration-500 hover:opacity-100" />
       </motion.g>
     </svg>
   )

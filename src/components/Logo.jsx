@@ -14,7 +14,7 @@ export default function Logo({ mono = false, animated = false, whenInView = fals
   const revealed = !whenInView || inView
 
   return (
-    <svg ref={svg} viewBox="0 0 200 200" role="img" aria-label="Logo de Conejo.08" {...props}>
+    <svg ref={svg} viewBox="0 0 200 200" role="img" aria-label="Logo de Conejo" {...props}>
       <defs>
         <clipPath id={`${id}-circle`}>
           <circle cx="100" cy="100" r="100" />

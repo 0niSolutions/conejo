@@ -71,12 +71,25 @@ body {
   }
 }
 
+.oni-shine {
+  background: linear-gradient(90deg, var(--color-sun-1), var(--color-sun-2), var(--color-sun-3), var(--color-sun-1)) 0 0 / 300% 100%;
+  background-clip: text;
+  color: transparent;
+  animation: oni-shine 4s linear infinite;
+}
+@keyframes oni-shine {
+  to {
+    background-position: 150% 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
   .marquee,
-  .wa-pulse::before {
+  .wa-pulse::before,
+  .oni-shine {
     animation: none;
   }
 }

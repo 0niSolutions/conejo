@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from 'react'
-import { animate, motion, useInView, useMotionValue, useSpring } from 'motion/react'
+import { animate, motion, useInView, useMotionTemplate, useMotionValue, useSpring, useTransform } from 'motion/react'
+import { WHATSAPP_URL } from '../data'
 
 export function InstagramIcon(props) {
   return (
@@ -65,6 +66,71 @@ export function Stitch({ d, size = 200, delay = 0, duration = 1.4, play = true, 
         <path d={d} fill="none" stroke="currentColor" strokeWidth={width} strokeDasharray={dash} strokeLinecap="round" />
       </g>
     </>
+  )
+}
+
+// Dibujo de una línea de productos: el trazo se dibuja y la costura se cose encima.
+export function Illustration({ product, play, accent = 'text-sun-1' }) {
+  return (
+    <svg viewBox="0 0 200 200" aria-hidden="true" className="size-3/5 overflow-visible transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
+      {product.lines.map((d, i) => (
+        <motion.path
+          key={d}
+          d={d}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: play ? 1 : 0 }}
+          transition={{ duration: 1.1, delay: 0.15 + i * 0.14, ease: 'easeInOut' }}
+        />
+      ))}
+      <g className={accent}>
+        <Stitch d={product.stitch} play={play} delay={0.9} duration={0.9} dash="6 5" />
+      </g>
+    </svg>
+  )
+}
+
+// La tarjeta se inclina hacia el puntero y un brillo lo sigue.
+export function useTilt() {
+  const px = useMotionValue(0.5)
+  const py = useMotionValue(0.5)
+  const rotateX = useSpring(useTransform(py, [0, 1], [8, -8]), { stiffness: 200, damping: 18 })
+  const rotateY = useSpring(useTransform(px, [0, 1], [-10, 10]), { stiffness: 200, damping: 18 })
+  const glowX = useTransform(px, [0, 1], ['0%', '100%'])
+  const glowY = useTransform(py, [0, 1], ['0%', '100%'])
+  const glow = useMotionTemplate`radial-gradient(circle at ${glowX} ${glowY}, rgba(242,162,79,.22), transparent 60%)`
+
+  const onPointerMove = (event) => {
+    if (event.pointerType !== 'mouse') return
+    const box = event.currentTarget.getBoundingClientRect()
+    px.set((event.clientX - box.left) / box.width)
+    py.set((event.clientY - box.top) / box.height)
+  }
+  const onPointerLeave = () => {
+    px.set(0.5)
+    py.set(0.5)
+  }
+
+  return { glow, tilt: { style: { rotateX, rotateY }, onPointerMove, onPointerLeave } }
+}
+
+export function AskCard() {
+  return (
+    <a
+      href={WHATSAPP_URL}
+      target="_blank"
+      rel="noreferrer"
+      className="group flex h-full min-h-56 flex-col justify-between rounded-2xl bg-bone p-5 text-ink transition-colors hover:bg-sun-1"
+    >
+      <span className="font-brush text-3xl leading-tight sm:text-4xl">¿Buscás otra cosa?</span>
+      <span className="inline-flex items-center gap-2 text-sm font-semibold">
+        <WhatsAppIcon className="size-5 transition-transform group-hover:rotate-12" /> Escribime
+      </span>
+    </a>
   )
 }
 

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform } from 'motion/react'
-import { Menu, X } from 'lucide-react'
+import { Menu, ShoppingBag, X } from 'lucide-react'
 import Logo from './Logo'
 import { InstagramIcon, MagneticLink } from './ui'
+import { useCart } from '../cart'
 import { INSTAGRAM_URL, NAV_LINKS } from '../data'
 
-export default function Nav({ ready }) {
+export default function Nav({ ready, page }) {
+  const { count, setOpen: setCartOpen } = useCart()
   const { scrollY, scrollYProgress } = useScroll()
   const [compact, setCompact] = useState(false)
   const [active, setActive] = useState('inicio')
@@ -15,6 +17,10 @@ export default function Nav({ ready }) {
   useMotionValueEvent(scrollY, 'change', (y) => setCompact(y > 40))
 
   useEffect(() => {
+    if (page === 'productos') {
+      setActive('productos')
+      return
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -28,7 +34,7 @@ export default function Nav({ ready }) {
       if (section) observer.observe(section)
     })
     return () => observer.disconnect()
-  }, [])
+  }, [page])
 
   return (
     <motion.header
@@ -42,14 +48,14 @@ export default function Nav({ ready }) {
           <motion.span whileHover={{ rotate: 360 }} transition={{ duration: 0.9, ease: 'easeInOut' }} className="block">
             <Logo className={`transition-all duration-300 ${compact ? 'size-11' : 'size-14 sm:size-16'}`} />
           </motion.span>
-          <span className="text-xl font-bold tracking-tight sm:text-2xl">Conejo.08</span>
+          <span className="text-xl font-bold tracking-tight sm:text-2xl">Conejo</span>
         </a>
 
         <nav aria-label="Principal" className="hidden items-center gap-1 lg:flex">
-          {NAV_LINKS.map(({ id, label }) => (
+          {NAV_LINKS.map(({ id, label, href }) => (
             <a
               key={id}
-              href={`#${id}`}
+              href={href}
               className={`relative px-3.5 py-2 text-sm transition-colors ${active === id ? 'font-semibold text-bone' : 'text-ash hover:text-bone'}`}
             >
               {label}
@@ -67,6 +73,29 @@ export default function Nav({ ready }) {
           >
             <InstagramIcon className="size-5" /> Seguime
           </MagneticLink>
+          <motion.button
+            type="button"
+            className="relative grid size-11 place-items-center rounded-full border border-bone transition-colors hover:bg-bone hover:text-ink"
+            aria-label={`Abrir carrito, ${count} ${count === 1 ? 'producto' : 'productos'}`}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setCartOpen(true)}
+          >
+            <ShoppingBag className="size-5" />
+            <AnimatePresence>
+              {count > 0 && (
+                <motion.span
+                  key={count}
+                  aria-hidden="true"
+                  className="absolute -top-1.5 -right-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-sun-2 px-1 text-xs font-bold text-bone"
+                  initial={{ scale: 0.4 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 14 }}
+                >
+                  {count}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
           <button
             type="button"
             className="grid size-11 place-items-center lg:hidden"
@@ -90,10 +119,10 @@ export default function Nav({ ready }) {
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="flex flex-col px-4 pb-6">
-              {NAV_LINKS.map(({ id, label }, i) => (
+              {NAV_LINKS.map(({ id, label, href }, i) => (
                 <motion.a
                   key={id}
-                  href={`#${id}`}
+                  href={href}
                   onClick={() => setOpen(false)}
                   className="py-3 font-brush text-3xl"
                   initial={{ opacity: 0, x: -24 }}

@@ -5,8 +5,8 @@ import Backpack from './Backpack'
 import { InstagramIcon, MagneticLink, WhatsAppIcon } from './ui'
 import { INSTAGRAM_URL, WHATSAPP_URL } from '../data'
 
-const TITLE = 'Conejo.08'
-const TAGLINE = ['Personalizado', 'Artesanal', 'Salteño']
+const TITLE = 'Conejo'
+const TAGLINE = ['Artesanal', 'Hecho a mano', 'Salteño']
 
 const STREAKS = [
   ['top-[8%] -right-[8%] h-20 w-[85%] sm:h-28', 0.15],
@@ -81,7 +81,8 @@ export default function Hero({ play }) {
         </motion.div>
       </motion.div>
 
-      <motion.div style={{ y: titleY }} className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-8">
+      {/* Ocupa todo el ancho por encima de la mochila: solo los botones y las letras reciben el puntero. */}
+      <motion.div style={{ y: titleY }} className="pointer-events-none relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-8 [&_a]:pointer-events-auto [&_h1_span]:pointer-events-auto">
         <h1 aria-label={TITLE} className="-rotate-3 font-brush text-[17vw] leading-none sm:text-[7.5rem] xl:text-[8.5rem]">
           {TITLE.split('').map((letter, i) => (
             <motion.span
@@ -117,7 +118,7 @@ export default function Hero({ play }) {
           animate={play ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 1.05 }}
         >
-          Marroquinería personalizada desde Salta Capital
+          Marroquinería artesanal desde Salta Capital
         </motion.p>
 
         <ul className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs tracking-[0.3em] text-ash uppercase sm:gap-x-5 sm:text-sm sm:tracking-[0.4em]">

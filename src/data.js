@@ -1,12 +1,12 @@
 export const INSTAGRAM_URL = 'https://www.instagram.com/conejo.08/'
-export const WHATSAPP_URL = 'https://wa.link/y0o2yn'
+export const WHATSAPP_URL = 'https://wa.me/5493875269754'
+export const ONI_URL = 'https://www.onisolutions.com.ar/'
 
 export const NAV_LINKS = [
-  { id: 'inicio', label: 'Inicio' },
-  { id: 'sobre-mi', label: 'Sobre mí' },
-  { id: 'productos', label: 'Productos' },
-  { id: 'como-pedir', label: 'Cómo pedir' },
-  { id: 'redes', label: 'Redes' },
+  { id: 'inicio', label: 'Inicio', href: '#inicio' },
+  { id: 'sobre-mi', label: 'Sobre mí', href: '#sobre-mi' },
+  { id: 'productos', label: 'Productos', href: '#/productos' },
+  { id: 'redes', label: 'Redes', href: '#redes' },
 ]
 
 export const STATS = [
@@ -15,17 +15,11 @@ export const STATS = [
   { value: 24, suffix: '/7', label: 'atención, todos los días' },
 ]
 
-export const STEPS = [
-  { title: 'Escribime', text: 'Mandame un mensaje por WhatsApp, cualquier día y a cualquier hora.' },
-  { title: 'Contame qué buscás', text: 'Qué producto necesitás, para qué lo vas a usar y qué te imaginás.' },
-  { title: 'Lo personalizamos', text: 'Definimos juntos los detalles para que sea bien tuyo.' },
-  { title: 'Ya es tuyo', text: 'Lo hago en Salta Capital y coordinamos la entrega por mensaje.' },
-]
-
 // `photo` acepta una ruta (ej. '/productos/mochila.jpg'): si está, reemplaza a la ilustración.
 export const PRODUCTS = [
   {
     name: 'Riñoneras',
+    slug: 'rinoneras',
     text: 'Lo justo y necesario, siempre a mano.',
     photo: null,
     lines: [
@@ -38,7 +32,8 @@ export const PRODUCTS = [
   },
   {
     name: 'Mochilas',
-    text: 'Para todos los días, con tu impronta.',
+    slug: 'mochilas',
+    text: 'Para todos los días, lista para lo que venga.',
     photo: null,
     lines: [
       'M55 65Q55 30 100 30Q145 30 145 65L155 165Q155 178 142 178H58Q45 178 45 165Z',
@@ -51,7 +46,8 @@ export const PRODUCTS = [
   },
   {
     name: 'Bolsos',
-    text: 'Espacio de sobra y un diseño que es tuyo.',
+    slug: 'bolsos',
+    text: 'Espacio de sobra y terminaciones a mano.',
     photo: null,
     lines: [
       'M35 75H165L175 170Q176 180 165 180H35Q24 180 25 170Z',
@@ -61,6 +57,7 @@ export const PRODUCTS = [
   },
   {
     name: 'Fundas de guitarra',
+    slug: 'fundas-de-guitarra',
     text: 'Tu instrumento merece viajar cuidado.',
     photo: null,
     lines: [
@@ -71,6 +68,7 @@ export const PRODUCTS = [
   },
   {
     name: 'Materos',
+    slug: 'materos',
     text: 'El equipo de mate, siempre listo.',
     photo: null,
     lines: [
@@ -83,7 +81,8 @@ export const PRODUCTS = [
   },
   {
     name: 'Bandoleras',
-    text: 'Cómoda, cruzada y hecha a tu gusto.',
+    slug: 'bandoleras',
+    text: 'Cómoda, cruzada y hecha a mano.',
     photo: null,
     lines: [
       'M40 85H160Q168 85 168 95V165Q168 175 158 175H42Q32 175 32 165V95Q32 85 40 85Z',
@@ -95,6 +94,7 @@ export const PRODUCTS = [
   },
   {
     name: 'Botiquines',
+    slug: 'botiquines',
     text: 'Todo ordenado para cuando hace falta.',
     photo: null,
     lines: [
@@ -105,3 +105,60 @@ export const PRODUCTS = [
     stitch: 'M30 75H170V165H30Z',
   },
 ]
+
+// Productos de ejemplo: reemplazar por los reales. `tag` es el `slug` de la línea a la que pertenece;
+// `photo` funciona igual que en PRODUCTS.
+export const CATALOG = [
+  { id: 'rinonera-clasica', tag: 'rinoneras', name: 'Riñonera Clásica', text: 'Un cierre, un bolsillo y listo.', price: 24000, photo: null },
+  { id: 'rinonera-urbana', tag: 'rinoneras', name: 'Riñonera Urbana', text: 'Compacta para andar por la ciudad.', price: 28000, photo: null },
+  { id: 'rinonera-doble', tag: 'rinoneras', name: 'Riñonera Doble', text: 'Dos compartimentos bien separados.', price: 32000, photo: null },
+  { id: 'rinonera-mini', tag: 'rinoneras', name: 'Riñonera Mini', text: 'Celular, llaves y poco más.', price: 21000, photo: null },
+  { id: 'rinonera-viajera', tag: 'rinoneras', name: 'Riñonera Viajera', text: 'Bolsillo interno para los documentos.', price: 35000, photo: null },
+  { id: 'rinonera-cruzada', tag: 'rinoneras', name: 'Riñonera Cruzada', text: 'Correa larga para usarla al pecho.', price: 30000, photo: null },
+
+  { id: 'mochila-diaria', tag: 'mochilas', name: 'Mochila Diaria', text: 'Lo que necesitás para salir todos los días.', price: 62000, photo: null },
+  { id: 'mochila-urbana', tag: 'mochilas', name: 'Mochila Urbana', text: 'Liviana y con espacio para la notebook.', price: 74000, photo: null },
+  { id: 'mochila-viajera', tag: 'mochilas', name: 'Mochila Viajera', text: 'Gran capacidad para escapadas largas.', price: 89000, photo: null },
+  { id: 'mochila-mini', tag: 'mochilas', name: 'Mochila Mini', text: 'Chica por fuera, justa por dentro.', price: 52000, photo: null },
+  { id: 'mochila-solapa', tag: 'mochilas', name: 'Mochila Solapa', text: 'Cierre con solapa y hebillas.', price: 78000, photo: null },
+  { id: 'mochila-escolar', tag: 'mochilas', name: 'Mochila Escolar', text: 'Resistente para el trajín de todo el año.', price: 58000, photo: null },
+
+  { id: 'bolso-fin-de-semana', tag: 'bolsos', name: 'Bolso Fin de Semana', text: 'Dos días de ropa, sin apretar.', price: 85000, photo: null },
+  { id: 'bolso-deportivo', tag: 'bolsos', name: 'Bolso Deportivo', text: 'Con lugar aparte para las zapatillas.', price: 69000, photo: null },
+  { id: 'bolso-de-mano', tag: 'bolsos', name: 'Bolso de Mano', text: 'Asas cortas y mucha presencia.', price: 64000, photo: null },
+  { id: 'bolso-de-viaje', tag: 'bolsos', name: 'Bolso de Viaje', text: 'Amplio, con correa para el hombro.', price: 98000, photo: null },
+  { id: 'bolso-tote', tag: 'bolsos', name: 'Bolso Tote', text: 'Abierto, simple y para todo.', price: 49000, photo: null },
+  { id: 'bolso-matero', tag: 'bolsos', name: 'Bolso Matero', text: 'Espacio para el termo y algo más.', price: 56000, photo: null },
+
+  { id: 'funda-criolla', tag: 'fundas-de-guitarra', name: 'Funda Criolla', text: 'A la medida de la guitarra criolla.', price: 92000, photo: null },
+  { id: 'funda-acustica', tag: 'fundas-de-guitarra', name: 'Funda Acústica', text: 'Para caja grande, con bolsillo frontal.', price: 99000, photo: null },
+  { id: 'funda-electrica', tag: 'fundas-de-guitarra', name: 'Funda Eléctrica', text: 'Delgada y con espacio para cables.', price: 88000, photo: null },
+  { id: 'funda-bajo', tag: 'fundas-de-guitarra', name: 'Funda de Bajo', text: 'Larga, con refuerzo en el mástil.', price: 105000, photo: null },
+  { id: 'funda-ukelele', tag: 'fundas-de-guitarra', name: 'Funda de Ukelele', text: 'Chiquita y bien protegida.', price: 48000, photo: null },
+  { id: 'funda-charango', tag: 'fundas-de-guitarra', name: 'Funda de Charango', text: 'Para llevarlo a todas las peñas.', price: 54000, photo: null },
+
+  { id: 'matero-clasico', tag: 'materos', name: 'Matero Clásico', text: 'Termo, mate y yerbera en su lugar.', price: 46000, photo: null },
+  { id: 'matero-cilindrico', tag: 'materos', name: 'Matero Cilíndrico', text: 'Con la forma justa para el termo.', price: 42000, photo: null },
+  { id: 'matero-rigido', tag: 'materos', name: 'Matero Rígido', text: 'Mantiene la forma, lleno o vacío.', price: 55000, photo: null },
+  { id: 'matero-viajero', tag: 'materos', name: 'Matero Viajero', text: 'Correa larga y bolsillo para bizcochos.', price: 51000, photo: null },
+  { id: 'matero-compacto', tag: 'materos', name: 'Matero Compacto', text: 'Para termos de medio litro.', price: 38000, photo: null },
+  { id: 'matero-doble', tag: 'materos', name: 'Matero Doble', text: 'Lugar para dos termos en la ronda.', price: 63000, photo: null },
+
+  { id: 'bandolera-clasica', tag: 'bandoleras', name: 'Bandolera Clásica', text: 'Simple, cruzada y de todos los días.', price: 36000, photo: null },
+  { id: 'bandolera-solapa', tag: 'bandoleras', name: 'Bandolera Solapa', text: 'Cierre con solapa y broche.', price: 41000, photo: null },
+  { id: 'bandolera-mini', tag: 'bandoleras', name: 'Bandolera Mini', text: 'Para llevar solo lo esencial.', price: 29000, photo: null },
+  { id: 'bandolera-tablet', tag: 'bandoleras', name: 'Bandolera Tablet', text: 'Un compartimento para la tablet.', price: 47000, photo: null },
+  { id: 'bandolera-fotografo', tag: 'bandoleras', name: 'Bandolera Fotógrafo', text: 'Lugar para la cámara y un lente.', price: 59000, photo: null },
+  { id: 'bandolera-doble-cierre', tag: 'bandoleras', name: 'Bandolera Doble Cierre', text: 'Dos cierres para tener todo a mano.', price: 44000, photo: null },
+
+  { id: 'botiquin-hogar', tag: 'botiquines', name: 'Botiquín Hogar', text: 'Lo de siempre, en un solo lugar.', price: 33000, photo: null },
+  { id: 'botiquin-viaje', tag: 'botiquines', name: 'Botiquín de Viaje', text: 'Compacto para la valija.', price: 27000, photo: null },
+  { id: 'botiquin-auto', tag: 'botiquines', name: 'Botiquín para Auto', text: 'Fácil de encontrar cuando hace falta.', price: 31000, photo: null },
+  { id: 'botiquin-trekking', tag: 'botiquines', name: 'Botiquín de Trekking', text: 'Liviano y con anclaje a la mochila.', price: 36000, photo: null },
+  { id: 'botiquin-mini', tag: 'botiquines', name: 'Botiquín Mini', text: 'Para la cartera o la riñonera.', price: 19000, photo: null },
+  { id: 'botiquin-familiar', tag: 'botiquines', name: 'Botiquín Familiar', text: 'Divisiones para ordenar de todo.', price: 45000, photo: null },
+]
+
+export function formatPrice(value) {
+  return value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
+}

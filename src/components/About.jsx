@@ -4,7 +4,7 @@ import { CountUp, InstagramIcon, SectionHeading, WhatsAppIcon } from './ui'
 import { INSTAGRAM_URL, STATS, WHATSAPP_URL } from '../data'
 
 const TEXT =
-  'Hago marroquinería personalizada desde Salta Capital. Riñoneras, mochilas, bolsos, fundas de guitarra, materos y más: cada pieza se piensa para quien la va a usar. Si buscás el tuyo, escribime, atiendo todos los días.'
+  'Hago marroquinería artesanal desde Salta Capital. Riñoneras, mochilas, bolsos, fundas de guitarra, materos y más: cada pieza está hecha a mano, una por una. Si buscás el tuyo, escribime, atiendo todos los días.'
 
 const SOCIALS = [
   { label: 'Instagram', href: INSTAGRAM_URL, Icon: InstagramIcon },
