@@ -11,7 +11,7 @@ export const NAV_LINKS = [
 
 export const STATS = [
   { value: 1015, label: 'seguidores en Instagram' },
-  { value: 7, label: 'líneas de productos' },
+  { value: 10, label: 'líneas de productos' },
   { value: 24, suffix: '/7', label: 'atención, todos los días' },
 ]
 
@@ -104,6 +104,47 @@ export const PRODUCTS = [
     ],
     stitch: 'M30 75H170V165H30Z',
   },
+  {
+    name: 'Pecheras',
+    slug: 'pecheras',
+    text: 'Todo al frente, con las manos libres.',
+    photo: null,
+    lines: [
+      'M50 80H150Q160 80 160 90V160Q160 170 150 170H50Q40 170 40 160V90Q40 80 50 80Z',
+      'M62 80L78 20M138 80L122 20',
+      'M40 112H10M160 112H190',
+      'M52 102H148',
+    ],
+    stitch: 'M50 114H150V160H50Z',
+  },
+  {
+    name: 'Musleras',
+    slug: 'musleras',
+    text: 'Firme en la pierna, para moverte sin vueltas.',
+    photo: null,
+    lines: [
+      'M20 30Q100 50 180 30',
+      'M75 41V70M125 41V70',
+      'M60 70H140Q150 70 150 80V160Q150 175 135 175H65Q50 175 50 160V80Q50 70 60 70Z',
+      'M50 100Q100 122 150 100',
+      'M50 135H22M150 135H178',
+    ],
+    stitch: 'M60 116Q100 132 140 116V158Q140 166 132 166H68Q60 166 60 158Z',
+  },
+  {
+    name: 'Oficio',
+    slug: 'oficio',
+    text: 'Para el que trabaja: las herramientas siempre a mano.',
+    photo: null,
+    lines: [
+      'M10 60H190M10 74H190',
+      'M45 74H155L148 170Q147 180 137 180H63Q53 180 52 170Z',
+      'M80 60V28M66 28H94',
+      'M120 60V42M114 42H126V24H114Z',
+      'M50 115H150',
+    ],
+    stitch: 'M60 124H140L136 170H64Z',
+  },
 ]
 
 // Productos de ejemplo: reemplazar por los reales. `tag` es el `slug` de la línea a la que pertenece;
@@ -157,6 +198,27 @@ export const CATALOG = [
   { id: 'botiquin-trekking', tag: 'botiquines', name: 'Botiquín de Trekking', text: 'Liviano y con anclaje a la mochila.', price: 36000, photo: null },
   { id: 'botiquin-mini', tag: 'botiquines', name: 'Botiquín Mini', text: 'Para la cartera o la riñonera.', price: 19000, photo: null },
   { id: 'botiquin-familiar', tag: 'botiquines', name: 'Botiquín Familiar', text: 'Divisiones para ordenar de todo.', price: 45000, photo: null },
+
+  { id: 'pechera-clasica', tag: 'pecheras', name: 'Pechera Clásica', text: 'Un compartimento amplio, simple y cómodo.', price: 39000, photo: null },
+  { id: 'pechera-urbana', tag: 'pecheras', name: 'Pechera Urbana', text: 'Fina y pegada al cuerpo para la ciudad.', price: 43000, photo: null },
+  { id: 'pechera-mini', tag: 'pecheras', name: 'Pechera Mini', text: 'Celular, documentos y nada más.', price: 31000, photo: null },
+  { id: 'pechera-doble', tag: 'pecheras', name: 'Pechera Doble', text: 'Dos bolsillos con cierre independiente.', price: 48000, photo: null },
+  { id: 'pechera-moto', tag: 'pecheras', name: 'Pechera para Moto', text: 'Bien ajustada, no se mueve al manejar.', price: 54000, photo: null },
+  { id: 'pechera-trekking', tag: 'pecheras', name: 'Pechera de Trekking', text: 'Correas regulables y anclaje a la mochila.', price: 57000, photo: null },
+
+  { id: 'muslera-clasica', tag: 'musleras', name: 'Muslera Clásica', text: 'Cinturón y correa de pierna regulables.', price: 37000, photo: null },
+  { id: 'muslera-urbana', tag: 'musleras', name: 'Muslera Urbana', text: 'Discreta y liviana para todos los días.', price: 41000, photo: null },
+  { id: 'muslera-mini', tag: 'musleras', name: 'Muslera Mini', text: 'Lo justo, sin sentir que la llevás.', price: 29000, photo: null },
+  { id: 'muslera-doble', tag: 'musleras', name: 'Muslera Doble', text: 'Dos bolsillos, uno con solapa.', price: 46000, photo: null },
+  { id: 'muslera-moto', tag: 'musleras', name: 'Muslera para Moto', text: 'Doble ajuste para que quede en su lugar.', price: 52000, photo: null },
+  { id: 'muslera-trekking', tag: 'musleras', name: 'Muslera de Trekking', text: 'Resistente y lista para el camino.', price: 49000, photo: null },
+
+  { id: 'oficio-portaherramientas', tag: 'oficio', name: 'Portaherramientas de Cintura', text: 'Bolsillos y presillas para lo de cada día.', price: 47000, photo: null },
+  { id: 'oficio-cinturon', tag: 'oficio', name: 'Cinturón de Trabajo', text: 'Ancho y reforzado para aguantar el peso.', price: 58000, photo: null },
+  { id: 'oficio-delantal', tag: 'oficio', name: 'Delantal de Taller', text: 'Protege y deja todo al alcance de la mano.', price: 65000, photo: null },
+  { id: 'oficio-estuche', tag: 'oficio', name: 'Estuche Enrollable', text: 'Cada herramienta en su lugar, y a la mochila.', price: 34000, photo: null },
+  { id: 'oficio-bolso', tag: 'oficio', name: 'Bolso de Herramientas', text: 'Base firme y mucha capacidad.', price: 86000, photo: null },
+  { id: 'oficio-funda', tag: 'oficio', name: 'Funda para Cinturón', text: 'Para la pinza o el metro, siempre a mano.', price: 18000, photo: null },
 ]
 
 export function formatPrice(value) {
