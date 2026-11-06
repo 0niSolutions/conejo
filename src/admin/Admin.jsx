@@ -321,22 +321,26 @@ export default function Admin() {
   const [session, setSession] = useState({ state: 'checking' })
 
   useEffect(() => {
-    getSession().then(
-      ({ authenticated }) => setSession({ state: authenticated ? 'in' : 'out' }),
-      (error) => setSession({ state: 'error', message: error.message }),
-    )
-    const onExpired = () => setSession({ state: 'out', notice: 'Tu sesión se cerró. Volvé a entrar para seguir.' })
+    refresh()
+    const onExpired = () => refresh({ notice: 'Tu sesión se cerró. Volvé a entrar para seguir.' })
     window.addEventListener(SESSION_EXPIRED, onExpired)
     return () => window.removeEventListener(SESSION_EXPIRED, onExpired)
   }, [])
 
+  // Vuelve a preguntar al servidor: así se sabe con qué usuario se entró y si sigue la cuenta de prueba.
+  const refresh = (extra = {}) =>
+    getSession().then(
+      ({ authenticated, user, demo }) => setSession({ state: authenticated ? 'in' : 'out', user, demo, ...extra }),
+      (error) => setSession({ state: 'error', message: error.message }),
+    )
+
   async function exit() {
     await logout().catch(() => {})
-    setSession({ state: 'out' })
+    refresh()
   }
 
-  if (session.state === 'in') return <Panel onLogout={exit} />
-  if (session.state === 'out') return <Login notice={session.notice} onLogin={() => setSession({ state: 'in' })} />
+  if (session.state === 'in') return <Panel user={session.user} onLogout={exit} />
+  if (session.state === 'out') return <Login notice={session.notice} demo={session.demo} onLogin={() => refresh()} />
   return (
     <main className="grid min-h-dvh place-items-center px-4 text-center">
       {session.state === 'error' ? (
@@ -352,7 +356,7 @@ export default function Admin() {
   )
 }
 
-function Panel({ onLogout }) {
+function Panel({ user, onLogout }) {
   const [catalog, setCatalog] = useState(null)
   const [loadError, setLoadError] = useState(null)
   const [status, setStatus] = useState(null)
@@ -452,8 +456,8 @@ function Panel({ onLogout }) {
             <a href="/#/productos" target="_blank" rel="noreferrer" className={SECONDARY}>
               Ver la web <ExternalLink className="size-4" />
             </a>
-            <button type="button" className={SECONDARY} onClick={onLogout}>
-              Salir <LogOut className="size-4" />
+            <button type="button" className={SECONDARY} onClick={onLogout} title={user ? `Entraste como ${user}` : undefined}>
+              Salir{user && <span className="hidden font-normal text-ash sm:inline">({user})</span>} <LogOut className="size-4" />
             </button>
           </div>
         </div>
