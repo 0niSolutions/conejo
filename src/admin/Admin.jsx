@@ -328,11 +328,12 @@ export default function Admin() {
   }, [])
 
   // Vuelve a preguntar al servidor: así se sabe con qué usuario se entró y si sigue la cuenta de prueba.
-  const refresh = (extra = {}) =>
-    getSession().then(
+  function refresh(extra = {}) {
+    return getSession().then(
       ({ authenticated, user, demo }) => setSession({ state: authenticated ? 'in' : 'out', user, demo, ...extra }),
       (error) => setSession({ state: 'error', message: error.message }),
     )
+  }
 
   async function exit() {
     await logout().catch(() => {})
