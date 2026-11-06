@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowDown, ArrowUp, Check, CircleAlert, ExternalLink, LoaderCircle, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, CircleAlert, ExternalLink, LoaderCircle, LogOut, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { formatPrice } from '../data'
-import { loadCatalog, matches, parsePrice, saveCatalog, uniqueSlug } from './api'
+import { SESSION_EXPIRED, getSession, loadCatalog, logout, matches, parsePrice, saveCatalog, uniqueSlug } from './api'
+import Login from './Login'
 import { Badge, Drawer, Field, ICON_BUTTON, INPUT, PRIMARY, PhotoPicker, SECONDARY, Thumb, Toggle } from './parts'
 
 function swap(list, a, b) {
@@ -315,7 +316,43 @@ function LinesTab({ catalog, onEdit, onNew, onReorder }) {
   )
 }
 
+// Pantalla de login delante del panel. La API rechaza todo pedido sin sesión, esto solo decide qué mostrar.
 export default function Admin() {
+  const [session, setSession] = useState({ state: 'checking' })
+
+  useEffect(() => {
+    getSession().then(
+      ({ authenticated }) => setSession({ state: authenticated ? 'in' : 'out' }),
+      (error) => setSession({ state: 'error', message: error.message }),
+    )
+    const onExpired = () => setSession({ state: 'out', notice: 'Tu sesión se cerró. Volvé a entrar para seguir.' })
+    window.addEventListener(SESSION_EXPIRED, onExpired)
+    return () => window.removeEventListener(SESSION_EXPIRED, onExpired)
+  }, [])
+
+  async function exit() {
+    await logout().catch(() => {})
+    setSession({ state: 'out' })
+  }
+
+  if (session.state === 'in') return <Panel onLogout={exit} />
+  if (session.state === 'out') return <Login notice={session.notice} onLogin={() => setSession({ state: 'in' })} />
+  return (
+    <main className="grid min-h-dvh place-items-center px-4 text-center">
+      {session.state === 'error' ? (
+        <div>
+          <CircleAlert className="mx-auto size-10 text-sun-2" />
+          <p className="mt-4 font-semibold">No se pudo abrir el panel.</p>
+          <p className="mt-1 text-ash">{session.message}</p>
+        </div>
+      ) : (
+        <LoaderCircle className="size-8 animate-spin text-ash" aria-label="Cargando" />
+      )}
+    </main>
+  )
+}
+
+function Panel({ onLogout }) {
   const [catalog, setCatalog] = useState(null)
   const [loadError, setLoadError] = useState(null)
   const [status, setStatus] = useState(null)
@@ -411,9 +448,14 @@ export default function Admin() {
             <h1 className="font-brush text-3xl leading-none">Panel</h1>
             <p className="mt-1 text-xs text-ash">Solo en tu compu. Los cambios se guardan en src/catalog.json; para publicarlos, hacé push.</p>
           </div>
-          <a href="/#/productos" target="_blank" rel="noreferrer" className={`${SECONDARY} shrink-0`}>
-            Ver la web <ExternalLink className="size-4" />
-          </a>
+          <div className="flex shrink-0 gap-2">
+            <a href="/#/productos" target="_blank" rel="noreferrer" className={SECONDARY}>
+              Ver la web <ExternalLink className="size-4" />
+            </a>
+            <button type="button" className={SECONDARY} onClick={onLogout}>
+              Salir <LogOut className="size-4" />
+            </button>
+          </div>
         </div>
       </header>
 

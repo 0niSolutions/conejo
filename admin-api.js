@@ -2,6 +2,8 @@ import { randomBytes } from 'node:crypto'
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { loadEnv } from 'vite'
+import { createAuth } from './admin-auth.js'
 
 // API del panel de administrador. Solo existe con `npm run dev`: la web publicada es estática
 // y no la incluye. Más adelante se reemplaza por una base de datos real.
@@ -77,11 +79,17 @@ async function removeUnusedPhotos(catalog) {
   )
 }
 
-async function handle(req, res) {
+async function handle(req, res, auth) {
   // Un header propio obliga al navegador a pedir permiso antes de un pedido desde otro sitio,
   // así ninguna página abierta en otra pestaña puede modificar el catálogo.
   if (req.headers['x-conejo-admin'] !== '1') throw new HttpError(403, 'Pedido no permitido.')
   const url = new URL(req.url, 'http://localhost')
+
+  const answer = await auth.handle(req, res, url)
+  if (answer !== undefined) return answer
+
+  // Todo lo demás necesita haber iniciado sesión.
+  if (!auth.isLoggedIn(req)) throw new HttpError(401, 'Tu sesión se cerró. Volvé a entrar.')
 
   if (url.pathname === '/catalog' && req.method === 'GET') {
     return JSON.parse(await readFile(CATALOG_FILE, 'utf8'))
@@ -130,8 +138,10 @@ export default function adminApi() {
       return []
     },
     configureServer(server) {
+      const env = loadEnv(server.config.mode, server.config.envDir || server.config.root, '')
+      const auth = createAuth({ root: ROOT, env, logger: server.config.logger, HttpError, readBody })
       server.middlewares.use('/api/admin', (req, res) => {
-        handle(req, res)
+        handle(req, res, auth)
           .then((data) => {
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify(data))

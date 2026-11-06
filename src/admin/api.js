@@ -11,9 +11,31 @@ async function request(path, options = {}) {
     throw new Error('No hay conexión con el panel. ¿Sigue corriendo `npm run dev`?')
   }
   const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(data.error ?? `El servidor respondió ${response.status}.`)
+  if (!response.ok) {
+    // Si la sesión venció en medio del uso, el panel vuelve a la pantalla de login.
+    if (response.status === 401 && path !== '/login') window.dispatchEvent(new Event(SESSION_EXPIRED))
+    const error = new Error(data.error ?? `El servidor respondió ${response.status}.`)
+    error.status = response.status
+    throw error
+  }
   return data
 }
+
+export const SESSION_EXPIRED = 'conejo:sesion-vencida'
+
+export const getSession = () => request('/session')
+
+export const login = (user, password) =>
+  request('/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user, password }) })
+
+export const logout = () => request('/logout', { method: 'POST' })
+
+const post = (path, data) => request(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+
+// Manda un código de 6 dígitos al mail, para crear la cuenta o recuperar la contraseña.
+export const requestCode = (email) => post('/code', { email })
+
+export const confirmCode = (data) => post('/confirm', data)
 
 export const loadCatalog = () => request('/catalog')
 
