@@ -79,17 +79,32 @@ async function removeUnusedPhotos(catalog) {
   )
 }
 
+const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1'])
+
+function sameOrigin(origin, host) {
+  try {
+    return new URL(origin).host === host
+  } catch {
+    return false
+  }
+}
+
 async function handle(req, res, auth) {
   // Un header propio obliga al navegador a pedir permiso antes de un pedido desde otro sitio,
   // así ninguna página abierta en otra pestaña puede modificar el catálogo.
+  // El panel es solo para esta compu: aunque se corra `npm run dev -- --host`, nadie de la red puede usarlo
+  // (sin HTTPS, la contraseña viajaría sin cifrar).
+  if (!LOOPBACK.has(req.socket.remoteAddress)) throw new HttpError(403, 'El panel solo se puede usar desde la compu donde corre `npm run dev`.')
   if (req.headers['x-conejo-admin'] !== '1') throw new HttpError(403, 'Pedido no permitido.')
+  // Además, si el navegador dice de qué página viene el pedido, tiene que ser esta misma.
+  if (req.headers.origin && !sameOrigin(req.headers.origin, req.headers.host)) throw new HttpError(403, 'Pedido no permitido.')
   const url = new URL(req.url, 'http://localhost')
 
   const answer = await auth.handle(req, res, url)
   if (answer !== undefined) return answer
 
   // Todo lo demás necesita haber iniciado sesión.
-  if (!auth.isLoggedIn(req)) throw new HttpError(401, 'Tu sesión se cerró. Volvé a entrar.')
+  if (!(await auth.isLoggedIn(req))) throw new HttpError(401, 'Tu sesión se cerró. Volvé a entrar.')
 
   if (url.pathname === '/catalog' && req.method === 'GET') {
     return JSON.parse(await readFile(CATALOG_FILE, 'utf8'))
@@ -141,6 +156,9 @@ export default function adminApi() {
       const env = loadEnv(server.config.mode, server.config.envDir || server.config.root, '')
       const auth = createAuth({ root: ROOT, env, logger: server.config.logger, HttpError, readBody })
       server.middlewares.use('/api/admin', (req, res) => {
+        // Nada de la API (sesión, catálogo) queda guardado en el caché del navegador.
+        res.setHeader('Cache-Control', 'no-store')
+        res.setHeader('X-Content-Type-Options', 'nosniff')
         handle(req, res, auth)
           .then((data) => {
             res.setHeader('Content-Type', 'application/json')
