@@ -1,0 +1,764 @@
+{
+  "lines": [
+    {
+      "slug": "rinoneras",
+      "name": "Riñoneras",
+      "text": "Lo justo y necesario, siempre a mano.",
+      "photo": null,
+      "art": {
+        "lines": [
+          "M30 95Q30 70 60 70H140Q170 70 170 95Q170 140 100 145Q30 140 30 95Z",
+          "M42 92Q100 80 158 92",
+          "M30 92H8M170 92H192",
+          "M150 90V104"
+        ],
+        "stitch": "M40 102Q45 130 100 134Q155 130 160 102"
+      }
+    },
+    {
+      "slug": "mochilas",
+      "name": "Mochilas",
+      "text": "Para todos los días, lista para lo que venga.",
+      "photo": null,
+      "art": {
+        "lines": [
+          "M55 65Q55 30 100 30Q145 30 145 65L155 165Q155 178 142 178H58Q45 178 45 165Z",
+          "M85 30Q100 12 115 30",
+          "M55 70Q100 95 145 70",
+          "M68 115H132V155Q132 165 122 165H78Q68 165 68 155Z",
+          "M100 83V105"
+        ],
+        "stitch": "M74 122H126V152Q126 159 118 159H82Q74 159 74 152Z"
+      }
+    },
+    {
+      "slug": "bolsos",
+      "name": "Bolsos",
+      "text": "Espacio de sobra y terminaciones a mano.",
+      "photo": null,
+      "art": {
+        "lines": [
+          "M35 75H165L175 170Q176 180 165 180H35Q24 180 25 170Z",
+          "M70 75Q70 25 100 25Q130 25 130 75"
+        ],
+        "stitch": "M42 84H158L166 172H34Z"
+      }
+    },
+    {
+      "slug": "fundas-de-guitarra",
+      "name": "Fundas de guitarra",
+      "text": "Tu instrumento merece viajar cuidado.",
+      "photo": null,
+      "art": {
+        "lines": [
+          "M100 12C112 12 114 22 112 34L110 72C110 80 128 82 130 96C132 108 122 112 122 118C122 124 142 128 142 152C142 176 122 188 100 188C78 188 58 176 58 152C58 128 78 124 78 118C78 112 68 108 70 96C72 82 90 80 90 72L88 34C86 22 88 12 100 12Z",
+          "M80 135H120V168H80Z"
+        ],
+        "stitch": "M100 24V126"
+      }
+    },
+    {
+      "slug": "materos",
+      "name": "Materos",
+      "text": "El equipo de mate, siempre listo.",
+      "photo": null,
+      "art": {
+        "lines": [
+          "M60 70H140L146 170Q146 180 136 180H64Q54 180 54 170Z",
+          "M85 70V40Q85 30 100 30Q115 30 115 40V70",
+          "M60 78Q20 20 100 12Q180 20 140 78",
+          "M70 110H130V160H70Z"
+        ],
+        "stitch": "M76 116H124V154H76Z"
+      }
+    },
+    {
+      "slug": "bandoleras",
+      "name": "Bandoleras",
+      "text": "Cómoda, cruzada y hecha a mano.",
+      "photo": null,
+      "art": {
+        "lines": [
+          "M40 85H160Q168 85 168 95V165Q168 175 158 175H42Q32 175 32 165V95Q32 85 40 85Z",
+          "M32 95V125Q100 155 168 125V95",
+          "M40 85Q20 20 100 12Q180 20 160 85",
+          "M92 132H108V152H92Z"
+        ],
+        "stitch": "M40 100V120Q100 146 160 120V100"
+      }
+    },
+    {
+      "slug": "botiquines",
+      "name": "Botiquines",
+      "text": "Todo ordenado para cuando hace falta.",
+      "photo": null,
+      "art": {
+        "lines": [
+          "M30 65H170Q180 65 180 75V165Q180 175 170 175H30Q20 175 20 165V75Q20 65 30 65Z",
+          "M75 65V50Q75 40 85 40H115Q125 40 125 50V65",
+          "M92 95H108V110H123V126H108V141H92V126H77V110H92Z"
+        ],
+        "stitch": "M30 75H170V165H30Z"
+      }
+    },
+    {
+      "slug": "pecheras",
+      "name": "Pecheras",
+      "text": "Todo al frente, con las manos libres.",
+      "photo": null,
+      "art": {
+        "lines": [
+          "M50 80H150Q160 80 160 90V160Q160 170 150 170H50Q40 170 40 160V90Q40 80 50 80Z",
+          "M62 80L78 20M138 80L122 20",
+          "M40 112H10M160 112H190",
+          "M52 102H148"
+        ],
+        "stitch": "M50 114H150V160H50Z"
+      }
+    },
+    {
+      "slug": "musleras",
+      "name": "Musleras",
+      "text": "Firme en la pierna, para moverte sin vueltas.",
+      "photo": null,
+      "art": {
+        "lines": [
+          "M20 30Q100 50 180 30",
+          "M75 41V70M125 41V70",
+          "M60 70H140Q150 70 150 80V160Q150 175 135 175H65Q50 175 50 160V80Q50 70 60 70Z",
+          "M50 100Q100 122 150 100",
+          "M50 135H22M150 135H178"
+        ],
+        "stitch": "M60 116Q100 132 140 116V158Q140 166 132 166H68Q60 166 60 158Z"
+      }
+    },
+    {
+      "slug": "oficio",
+      "name": "Oficio",
+      "text": "Para el que trabaja: las herramientas siempre a mano.",
+      "photo": null,
+      "art": {
+        "lines": [
+          "M10 60H190M10 74H190",
+          "M45 74H155L148 170Q147 180 137 180H63Q53 180 52 170Z",
+          "M80 60V28M66 28H94",
+          "M120 60V42M114 42H126V24H114Z",
+          "M50 115H150"
+        ],
+        "stitch": "M60 124H140L136 170H64Z"
+      }
+    }
+  ],
+  "products": [
+    {
+      "id": "rinonera-clasica",
+      "line": "rinoneras",
+      "name": "Riñonera Clásica",
+      "text": "Un cierre, un bolsillo y listo.",
+      "price": 24000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "rinonera-urbana",
+      "line": "rinoneras",
+      "name": "Riñonera Urbana",
+      "text": "Compacta para andar por la ciudad.",
+      "price": 28000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "rinonera-doble",
+      "line": "rinoneras",
+      "name": "Riñonera Doble",
+      "text": "Dos compartimentos bien separados.",
+      "price": 32000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "rinonera-mini",
+      "line": "rinoneras",
+      "name": "Riñonera Mini",
+      "text": "Celular, llaves y poco más.",
+      "price": 21000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "rinonera-viajera",
+      "line": "rinoneras",
+      "name": "Riñonera Viajera",
+      "text": "Bolsillo interno para los documentos.",
+      "price": 35000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "rinonera-cruzada",
+      "line": "rinoneras",
+      "name": "Riñonera Cruzada",
+      "text": "Correa larga para usarla al pecho.",
+      "price": 30000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "rinonera-cangrejo-furioso",
+      "line": "rinoneras",
+      "name": "Riñonera cangrejo furioso",
+      "text": "alta riñonera para tus saliditas",
+      "price": 45000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "mochila-diaria",
+      "line": "mochilas",
+      "name": "Mochila Diaria",
+      "text": "Lo que necesitás para salir todos los días.",
+      "price": 62000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "mochila-urbana",
+      "line": "mochilas",
+      "name": "Mochila Urbana",
+      "text": "Liviana y con espacio para la notebook.",
+      "price": 74000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "mochila-viajera",
+      "line": "mochilas",
+      "name": "Mochila Viajera",
+      "text": "Gran capacidad para escapadas largas.",
+      "price": 89000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "mochila-mini",
+      "line": "mochilas",
+      "name": "Mochila Mini",
+      "text": "Chica por fuera, justa por dentro.",
+      "price": 52000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "mochila-solapa",
+      "line": "mochilas",
+      "name": "Mochila Solapa",
+      "text": "Cierre con solapa y hebillas.",
+      "price": 78000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "mochila-escolar",
+      "line": "mochilas",
+      "name": "Mochila Escolar",
+      "text": "Resistente para el trajín de todo el año.",
+      "price": 58000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bolso-fin-de-semana",
+      "line": "bolsos",
+      "name": "Bolso Fin de Semana",
+      "text": "Dos días de ropa, sin apretar.",
+      "price": 85000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bolso-deportivo",
+      "line": "bolsos",
+      "name": "Bolso Deportivo",
+      "text": "Con lugar aparte para las zapatillas.",
+      "price": 69000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bolso-de-mano",
+      "line": "bolsos",
+      "name": "Bolso de Mano",
+      "text": "Asas cortas y mucha presencia.",
+      "price": 64000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bolso-de-viaje",
+      "line": "bolsos",
+      "name": "Bolso de Viaje",
+      "text": "Amplio, con correa para el hombro.",
+      "price": 98000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bolso-tote",
+      "line": "bolsos",
+      "name": "Bolso Tote",
+      "text": "Abierto, simple y para todo.",
+      "price": 49000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bolso-matero",
+      "line": "bolsos",
+      "name": "Bolso Matero",
+      "text": "Espacio para el termo y algo más.",
+      "price": 56000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "funda-criolla",
+      "line": "fundas-de-guitarra",
+      "name": "Funda Criolla",
+      "text": "A la medida de la guitarra criolla.",
+      "price": 92000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "funda-acustica",
+      "line": "fundas-de-guitarra",
+      "name": "Funda Acústica",
+      "text": "Para caja grande, con bolsillo frontal.",
+      "price": 99000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "funda-electrica",
+      "line": "fundas-de-guitarra",
+      "name": "Funda Eléctrica",
+      "text": "Delgada y con espacio para cables.",
+      "price": 88000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "funda-bajo",
+      "line": "fundas-de-guitarra",
+      "name": "Funda de Bajo",
+      "text": "Larga, con refuerzo en el mástil.",
+      "price": 105000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "funda-ukelele",
+      "line": "fundas-de-guitarra",
+      "name": "Funda de Ukelele",
+      "text": "Chiquita y bien protegida.",
+      "price": 48000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "funda-charango",
+      "line": "fundas-de-guitarra",
+      "name": "Funda de Charango",
+      "text": "Para llevarlo a todas las peñas.",
+      "price": 54000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "matero-clasico",
+      "line": "materos",
+      "name": "Matero Clásico",
+      "text": "Termo, mate y yerbera en su lugar.",
+      "price": 46000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "matero-cilindrico",
+      "line": "materos",
+      "name": "Matero Cilíndrico",
+      "text": "Con la forma justa para el termo.",
+      "price": 42000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "matero-rigido",
+      "line": "materos",
+      "name": "Matero Rígido",
+      "text": "Mantiene la forma, lleno o vacío.",
+      "price": 55000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "matero-viajero",
+      "line": "materos",
+      "name": "Matero Viajero",
+      "text": "Correa larga y bolsillo para bizcochos.",
+      "price": 51000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "matero-compacto",
+      "line": "materos",
+      "name": "Matero Compacto",
+      "text": "Para termos de medio litro.",
+      "price": 38000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "matero-doble",
+      "line": "materos",
+      "name": "Matero Doble",
+      "text": "Lugar para dos termos en la ronda.",
+      "price": 63000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bandolera-clasica",
+      "line": "bandoleras",
+      "name": "Bandolera Clásica",
+      "text": "Simple, cruzada y de todos los días.",
+      "price": 36000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bandolera-solapa",
+      "line": "bandoleras",
+      "name": "Bandolera Solapa",
+      "text": "Cierre con solapa y broche.",
+      "price": 41000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bandolera-mini",
+      "line": "bandoleras",
+      "name": "Bandolera Mini",
+      "text": "Para llevar solo lo esencial.",
+      "price": 29000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bandolera-tablet",
+      "line": "bandoleras",
+      "name": "Bandolera Tablet",
+      "text": "Un compartimento para la tablet.",
+      "price": 47000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bandolera-fotografo",
+      "line": "bandoleras",
+      "name": "Bandolera Fotógrafo",
+      "text": "Lugar para la cámara y un lente.",
+      "price": 59000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "bandolera-doble-cierre",
+      "line": "bandoleras",
+      "name": "Bandolera Doble Cierre",
+      "text": "Dos cierres para tener todo a mano.",
+      "price": 44000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "botiquin-hogar",
+      "line": "botiquines",
+      "name": "Botiquín Hogar",
+      "text": "Lo de siempre, en un solo lugar.",
+      "price": 33000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "botiquin-viaje",
+      "line": "botiquines",
+      "name": "Botiquín de Viaje",
+      "text": "Compacto para la valija.",
+      "price": 27000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "botiquin-auto",
+      "line": "botiquines",
+      "name": "Botiquín para Auto",
+      "text": "Fácil de encontrar cuando hace falta.",
+      "price": 31000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "botiquin-trekking",
+      "line": "botiquines",
+      "name": "Botiquín de Trekking",
+      "text": "Liviano y con anclaje a la mochila.",
+      "price": 36000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "botiquin-mini",
+      "line": "botiquines",
+      "name": "Botiquín Mini",
+      "text": "Para la cartera o la riñonera.",
+      "price": 19000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "botiquin-familiar",
+      "line": "botiquines",
+      "name": "Botiquín Familiar",
+      "text": "Divisiones para ordenar de todo.",
+      "price": 45000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "pechera-clasica",
+      "line": "pecheras",
+      "name": "Pechera Clásica",
+      "text": "Un compartimento amplio, simple y cómodo.",
+      "price": 39000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "pechera-urbana",
+      "line": "pecheras",
+      "name": "Pechera Urbana",
+      "text": "Fina y pegada al cuerpo para la ciudad.",
+      "price": 43000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "pechera-mini",
+      "line": "pecheras",
+      "name": "Pechera Mini",
+      "text": "Celular, documentos y nada más.",
+      "price": 31000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "pechera-doble",
+      "line": "pecheras",
+      "name": "Pechera Doble",
+      "text": "Dos bolsillos con cierre independiente.",
+      "price": 48000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "pechera-moto",
+      "line": "pecheras",
+      "name": "Pechera para Moto",
+      "text": "Bien ajustada, no se mueve al manejar.",
+      "price": 54000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "pechera-trekking",
+      "line": "pecheras",
+      "name": "Pechera de Trekking",
+      "text": "Correas regulables y anclaje a la mochila.",
+      "price": 57000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "muslera-clasica",
+      "line": "musleras",
+      "name": "Muslera Clásica",
+      "text": "Cinturón y correa de pierna regulables.",
+      "price": 37000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "muslera-urbana",
+      "line": "musleras",
+      "name": "Muslera Urbana",
+      "text": "Discreta y liviana para todos los días.",
+      "price": 41000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "muslera-mini",
+      "line": "musleras",
+      "name": "Muslera Mini",
+      "text": "Lo justo, sin sentir que la llevás.",
+      "price": 29000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "muslera-doble",
+      "line": "musleras",
+      "name": "Muslera Doble",
+      "text": "Dos bolsillos, uno con solapa.",
+      "price": 46000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "muslera-moto",
+      "line": "musleras",
+      "name": "Muslera para Moto",
+      "text": "Doble ajuste para que quede en su lugar.",
+      "price": 52000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "muslera-trekking",
+      "line": "musleras",
+      "name": "Muslera de Trekking",
+      "text": "Resistente y lista para el camino.",
+      "price": 49000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "oficio-portaherramientas",
+      "line": "oficio",
+      "name": "Portaherramientas de Cintura",
+      "text": "Bolsillos y presillas para lo de cada día.",
+      "price": 47000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "oficio-cinturon",
+      "line": "oficio",
+      "name": "Cinturón de Trabajo",
+      "text": "Ancho y reforzado para aguantar el peso.",
+      "price": 58000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "oficio-delantal",
+      "line": "oficio",
+      "name": "Delantal de Taller",
+      "text": "Protege y deja todo al alcance de la mano.",
+      "price": 65000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "oficio-estuche",
+      "line": "oficio",
+      "name": "Estuche Enrollable",
+      "text": "Cada herramienta en su lugar, y a la mochila.",
+      "price": 34000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "oficio-bolso",
+      "line": "oficio",
+      "name": "Bolso de Herramientas",
+      "text": "Base firme y mucha capacidad.",
+      "price": 86000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
+      "id": "oficio-funda",
+      "line": "oficio",
+      "name": "Funda para Cinturón",
+      "text": "Para la pinza o el metro, siempre a mano.",
+      "price": 18000,
+      "photos": [],
+      "hidden": false,
+      "soldOut": false
+    }
+  ]
+}

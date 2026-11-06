@@ -1,12 +1,54 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { AnimatePresence, motion, useInView } from 'motion/react'
-import { Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { QuantityStepper } from './Cart'
 import { AskCard, Illustration, useTilt } from './ui'
 import { useCart } from '../cart'
 import { CATALOG, PRODUCTS, formatPrice } from '../data'
 
 const ACCENTS = ['text-sun-1', 'text-sun-2', 'text-sun-3', 'text-bone']
+
+const ARROW = 'absolute top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-ink/70 text-bone backdrop-blur-sm transition hover:bg-bone hover:text-ink focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
+
+function Gallery({ photos, name }) {
+  const [index, setIndex] = useState(0)
+  const count = photos.length
+  const current = Math.min(index, count - 1)
+  const go = (step) => setIndex((current + step + count) % count)
+
+  return (
+    <div className="relative size-full">
+      <AnimatePresence initial={false}>
+        <motion.img
+          key={photos[current]}
+          src={photos[current]}
+          alt={count > 1 ? `${name}, foto ${current + 1} de ${count}` : name}
+          loading="lazy"
+          className="absolute inset-0 size-full object-cover grayscale transition-[filter,scale] duration-500 group-hover:scale-105 group-hover:grayscale-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        />
+      </AnimatePresence>
+      {count > 1 && (
+        <>
+          <button type="button" aria-label="Foto anterior" className={`${ARROW} left-2`} onClick={() => go(-1)}>
+            <ChevronLeft className="size-5" />
+          </button>
+          <button type="button" aria-label="Foto siguiente" className={`${ARROW} right-2`} onClick={() => go(1)}>
+            <ChevronRight className="size-5" />
+          </button>
+          <div aria-hidden="true" className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
+            {photos.map((photo, i) => (
+              <span key={photo} className={`h-1.5 rounded-full bg-bone transition-all ${i === current ? 'w-4' : 'w-1.5 opacity-50'}`} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 function CatalogCard({ item }) {
   const { quantities, setQuantity } = useCart()
@@ -24,11 +66,14 @@ function CatalogCard({ item }) {
           className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
           style={{ background: glow }}
         />
-        <div className="grid aspect-square place-items-center overflow-hidden">
-          {item.photo ? (
-            <img src={item.photo} alt={item.name} loading="lazy" className="size-full object-cover grayscale transition duration-500 group-hover:scale-105 group-hover:grayscale-0" />
+        <div className="relative grid aspect-square place-items-center overflow-hidden">
+          {item.photos.length > 0 ? (
+            <Gallery photos={item.photos} name={item.name} />
           ) : (
             <Illustration product={line} play={inView} accent={ACCENTS[CATALOG.indexOf(item) % ACCENTS.length]} />
+          )}
+          {item.soldOut && (
+            <span className="absolute top-3 left-3 rounded-full bg-sun-2 px-3 py-1 text-xs font-bold tracking-wide text-bone uppercase">Sin stock</span>
           )}
         </div>
         <div className="relative flex flex-1 flex-col border-t border-line p-4 sm:p-5">
@@ -40,7 +85,11 @@ function CatalogCard({ item }) {
           <p className="mt-3 text-lg font-semibold tabular-nums">{formatPrice(item.price)}</p>
           <div className="mt-3 h-11">
             <AnimatePresence mode="wait" initial={false}>
-              {quantity === 0 ? (
+              {item.soldOut ? (
+                <p key="sold-out" className="flex size-full items-center justify-center rounded-full border border-line text-sm text-ash">
+                  Sin stock por ahora
+                </p>
+              ) : quantity === 0 ? (
                 <motion.button
                   key="add"
                   type="button"

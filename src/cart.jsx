@@ -45,9 +45,9 @@ export function CartProvider({ children }) {
   const clear = useCallback(() => setQuantities({}), [])
 
   const value = useMemo(() => {
-    // Lo guardado puede nombrar productos que ya no están en el catálogo: esos se ignoran.
+    // Lo guardado puede nombrar productos que ya no están en el catálogo o se quedaron sin stock: esos se ignoran.
     const lines = Object.entries(quantities).flatMap(([id, quantity]) => {
-      const product = CATALOG.find((item) => item.id === id)
+      const product = CATALOG.find((item) => item.id === id && !item.soldOut)
       return product ? [{ product, quantity }] : []
     })
     const count = lines.reduce((sum, line) => sum + line.quantity, 0)
