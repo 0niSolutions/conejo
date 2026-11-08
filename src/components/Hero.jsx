@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from 'motion/react'
 import { ChevronRight } from 'lucide-react'
-import Backpack from './Backpack'
+import HeroBag from './HeroBag'
 import { InstagramIcon, MagneticLink, WhatsAppIcon } from './ui'
 import { INSTAGRAM_URL, WHATSAPP_URL } from '../data'
 
@@ -178,7 +178,7 @@ export default function Hero({ play }) {
             animate={{ y: [0, -14, 0], rotate: [-1, 1, -1] }}
             transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <Backpack play={play} />
+            <HeroBag play={play} />
           </motion.div>
         </motion.div>
       </motion.div>
