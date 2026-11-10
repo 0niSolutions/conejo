@@ -5,6 +5,7 @@ import nodemailer from 'nodemailer'
 
 // Cuentas del panel de administrador.
 //
+// - Configuración: .env (se sube a git, solo la cuenta de prueba) y .env.local (privado, pisa a .env).
 // - Los mails que pueden tener cuenta van en .env.local: ADMIN_EMAILS=uno@gmail.com,otro@gmail.com
 //   Si sacás un mail de la lista, esa cuenta deja de poder entrar (y se cierran sus sesiones).
 // - El dueño pone su mail, le llega un código de 6 dígitos y con él elige usuario y contraseña.
