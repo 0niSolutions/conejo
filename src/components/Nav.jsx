@@ -48,7 +48,7 @@ export default function Nav({ ready, page }) {
           <motion.span whileHover={{ rotate: 360 }} transition={{ duration: 0.9, ease: 'easeInOut' }} className="block">
             <Logo className={`transition-all duration-300 ${compact ? 'size-11' : 'size-14 sm:size-16'}`} />
           </motion.span>
-          <span className="text-xl font-bold tracking-tight sm:text-2xl">Conejo</span>
+          <span className="text-xl font-bold tracking-tight sm:text-2xl">CONEJO.08</span>
         </a>
 
         <nav aria-label="Principal" className="hidden items-center gap-1 lg:flex">

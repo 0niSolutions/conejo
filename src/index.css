@@ -93,3 +93,11 @@ body {
     animation: none;
   }
 }
+
+/* Carrete con scroll horizontal pero sin barra visible (se mueve con flechas, arrastre o rueda). */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

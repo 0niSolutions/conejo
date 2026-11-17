@@ -50,7 +50,7 @@ function Gallery({ photos, name }) {
   )
 }
 
-function CatalogCard({ item }) {
+export function CatalogCard({ item }) {
   const { quantities, setQuantity } = useCart()
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.3 })

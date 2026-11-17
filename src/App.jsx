@@ -5,6 +5,7 @@ import Cart from './components/Cart'
 import Catalog from './components/Catalog'
 import Cta from './components/Cta'
 import Cursor from './components/Cursor'
+import Featured from './components/Featured'
 import Footer from './components/Footer'
 import Hero from './components/Hero'
 import Loader from './components/Loader'
@@ -79,6 +80,7 @@ export default function App() {
             <Hero play={ready} />
             <Marquee />
             <About />
+            <Featured />
             <Products />
             <Cta />
           </main>

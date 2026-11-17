@@ -232,7 +232,7 @@ export default function Login({ onLogin, notice, demo }) {
   const [step, setStep] = useState({ name: 'signin' })
 
   useEffect(() => {
-    document.title = 'Entrar · Panel · Conejo'
+    document.title = 'Entrar · Panel · CONEJO.08'
   }, [])
 
   const titles = { signin: 'Panel', email: step.purpose === 'create' ? 'Crear cuenta' : 'Recuperar acceso', code: 'Revisá tu mail' }

@@ -760,5 +760,13 @@
       "hidden": false,
       "soldOut": false
     }
+  ],
+  "featured": [
+    "rinonera-clasica",
+    "mochila-diaria",
+    "bolso-fin-de-semana",
+    "funda-criolla",
+    "matero-clasico",
+    "bandolera-clasica"
   ]
 }

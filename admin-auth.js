@@ -252,11 +252,11 @@ export function createAuth({ root, env, logger, HttpError, readBody }) {
       const code = String(randomInt(0, 1_000_000)).padStart(6, '0')
       const existing = (await loadUsers()).some((item) => item.email === email)
       const subject = existing ? 'Tu código para cambiar la contraseña del panel' : 'Tu código para crear tu cuenta del panel'
-      const text = `Tu código es ${code}\n\nVence en 10 minutos. Si no lo pediste vos, ignorá este mail: nadie puede entrar sin este código.\n\nConejo · Panel de administrador`
+      const text = `Tu código es ${code}\n\nVence en 10 minutos. Si no lo pediste vos, ignorá este mail: nadie puede entrar sin este código.\n\nCONEJO.08 · Panel de administrador`
 
       if (mailer) {
         try {
-          await mailer.sendMail({ from: { name: 'Conejo · Panel', address: env.GMAIL_USER.trim() }, to: email, subject, text })
+          await mailer.sendMail({ from: { name: 'CONEJO.08 · Panel', address: env.GMAIL_USER.trim() }, to: email, subject, text })
         } catch (error) {
           logger.error(`[panel] No se pudo mandar el mail: ${error.message}`)
           throw new HttpError(502, 'No se pudo mandar el mail. Revisá GMAIL_USER y GMAIL_APP_PASSWORD en .env.local.')

@@ -330,7 +330,7 @@ export default function HeroBag({ play }) {
 
   return (
     <div className="relative size-full">
-      <svg ref={svg} viewBox="0 0 500 600" className="size-full overflow-visible" role="img" aria-label={`${name} con el logo de Conejo`}>
+      <svg ref={svg} viewBox="0 0 500 600" className="size-full overflow-visible" role="img" aria-label={`${name} con el logo de CONEJO.08`}>
         <defs>
           <linearGradient id="bag-body" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#3f3f3f" />

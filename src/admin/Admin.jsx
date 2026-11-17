@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowDown, ArrowUp, Check, CircleAlert, ExternalLink, LoaderCircle, LogOut, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, CircleAlert, ExternalLink, LoaderCircle, LogOut, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
 import { formatPrice } from '../data'
 import { SESSION_EXPIRED, getSession, loadCatalog, logout, matches, parsePrice, saveCatalog, uniqueSlug } from './api'
 import Login from './Login'
@@ -41,8 +41,8 @@ function confirmDiscard(dirty) {
 function ProductEditor({ product, catalog, defaultLine, onSave, onDelete, onClose }) {
   const { draft, setDraft, set, dirty } = useDraft(
     product
-      ? { ...product, price: String(product.price) }
-      : { name: '', line: defaultLine || catalog.lines[0].slug, text: '', price: '', photos: [], hidden: false, soldOut: false },
+      ? { ...product, price: String(product.price), featured: catalog.featured.includes(product.id) }
+      : { name: '', line: defaultLine || catalog.lines[0].slug, text: '', price: '', photos: [], hidden: false, soldOut: false, featured: false },
   )
   const [errors, setErrors] = useState({})
   const [uploading, setUploading] = useState(false)
@@ -70,7 +70,7 @@ function ProductEditor({ product, catalog, defaultLine, onSave, onDelete, onClos
       hidden: draft.hidden,
       soldOut: draft.soldOut,
     }
-    const ok = await onSave(saved, !product)
+    const ok = await onSave(saved, !product, draft.featured)
     setSaving(false)
     if (ok) onClose()
   }
@@ -123,6 +123,7 @@ function ProductEditor({ product, catalog, defaultLine, onSave, onDelete, onClos
         <div className="space-y-3">
           <Toggle label="Mostrar en la web" hint="Apagalo para esconderlo sin borrarlo." checked={!draft.hidden} onChange={(value) => set('hidden')(!value)} />
           <Toggle label="Sin stock" hint="Se sigue viendo, pero no se puede agregar al carrito." checked={draft.soldOut} onChange={set('soldOut')} />
+          <Toggle label="Destacado" hint="Aparece en el carrete de destacados del inicio." checked={draft.featured} onChange={set('featured')} />
         </div>
       </form>
     </Drawer>
@@ -316,6 +317,99 @@ function LinesTab({ catalog, onEdit, onNew, onReorder }) {
   )
 }
 
+// Los catálogos guardados antes de que existieran los destacados no traen la lista.
+const withFeatured = (data) => ({ ...data, featured: Array.isArray(data.featured) ? data.featured : [] })
+
+function FeaturedTab({ catalog, onEdit, onChange }) {
+  const [adding, setAdding] = useState('')
+  const lineBySlug = useMemo(() => Object.fromEntries(catalog.lines.map((line) => [line.slug, line])), [catalog.lines])
+  const byId = useMemo(() => Object.fromEntries(catalog.products.map((product) => [product.id, product])), [catalog.products])
+  const featured = catalog.featured.map((id) => byId[id]).filter(Boolean)
+  const available = catalog.products.filter((product) => !catalog.featured.includes(product.id))
+
+  function add(event) {
+    event.preventDefault()
+    const product = byId[adding]
+    if (!product) return
+    setAdding('')
+    onChange([...catalog.featured, product.id], `"${product.name}" ahora es destacado.`)
+  }
+
+  return (
+    <>
+      <p className="text-sm text-ash">
+        Son los productos del carrete del inicio, abajo de “Sobre mí”, en este orden. Si no hay ninguno, el carrete no se muestra.
+      </p>
+
+      <form className="mt-5 flex flex-wrap gap-3" onSubmit={add}>
+        <label className="min-w-52 flex-1">
+          <span className="sr-only">Producto para destacar</span>
+          <select className={INPUT} value={adding} onChange={(event) => setAdding(event.target.value)}>
+            <option value="">Elegí un producto para destacar…</option>
+            {catalog.lines.map((line) => {
+              const options = available.filter((product) => product.line === line.slug)
+              if (options.length === 0) return null
+              return (
+                <optgroup key={line.slug} label={line.name}>
+                  {options.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )
+            })}
+          </select>
+        </label>
+        <button type="submit" className={PRIMARY} disabled={!adding}>
+          <Star className="size-4" /> Destacar
+        </button>
+      </form>
+
+      {featured.length === 0 ? (
+        <p className="py-16 text-center text-ash">Todavía no hay destacados. Elegí un producto arriba o activá “Destacado” al editar uno.</p>
+      ) : (
+        <ul className="mt-5 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-coal">
+          {featured.map((product, i) => (
+            <Row
+              key={product.id}
+              thumb={<Thumb photo={product.photos[0]} art={lineBySlug[product.line]?.art} />}
+              title={product.name}
+              subtitle={`${lineBySlug[product.line]?.name} · ${formatPrice(product.price)}${product.photos.length ? '' : ' · sin fotos, se ve el dibujo'}`}
+              badges={
+                <>
+                  {product.hidden && <Badge>Oculto: no se ve en la web</Badge>}
+                  {product.soldOut && <Badge tone="sun">Sin stock</Badge>}
+                </>
+              }
+              actions={
+                <>
+                  <MoveButtons
+                    name={product.name}
+                    index={i}
+                    total={featured.length}
+                    onMove={(step) => onChange(swap(catalog.featured, i, i + step), 'Orden guardado.')}
+                  />
+                  <button
+                    type="button"
+                    aria-label={`Quitar ${product.name} de destacados`}
+                    title="Quitar de destacados"
+                    className={ICON_BUTTON}
+                    onClick={() => onChange(catalog.featured.filter((id) => id !== product.id), `Quitaste “${product.name}” de destacados.`)}
+                  >
+                    <X className="size-4" />
+                  </button>
+                </>
+              }
+              onEdit={() => onEdit(product)}
+            />
+          ))}
+        </ul>
+      )}
+    </>
+  )
+}
+
 // Pantalla de login delante del panel. La API rechaza todo pedido sin sesión, esto solo decide qué mostrar.
 export default function Admin() {
   const [session, setSession] = useState({ state: 'checking' })
@@ -366,8 +460,8 @@ function Panel({ user, onLogout }) {
   const queue = useRef(Promise.resolve())
 
   useEffect(() => {
-    document.title = 'Panel · Conejo'
-    loadCatalog().then(setCatalog, (error) => setLoadError(error.message))
+    document.title = 'Panel · CONEJO.08'
+    loadCatalog().then((data) => setCatalog(withFeatured(data)), (error) => setLoadError(error.message))
   }, [])
 
   useEffect(() => {
@@ -388,7 +482,7 @@ function Panel({ user, onLogout }) {
           },
           async (error) => {
             setStatus({ type: 'error', text: error.message })
-            setCatalog(await loadCatalog().catch(() => next))
+            setCatalog(withFeatured(await loadCatalog().catch(() => next)))
             return false
           },
         ),
@@ -397,20 +491,29 @@ function Panel({ user, onLogout }) {
     return run
   }
 
-  function saveProduct(saved, isNew) {
+  function saveProduct(saved, isNew, featured) {
     let products = catalog.products.map((product) => (product.id === saved.id ? saved : product))
     if (isNew) {
       const last = catalog.products.findLastIndex((product) => product.line === saved.line)
       products = [...catalog.products]
       products.splice(last === -1 ? products.length : last + 1, 0, saved)
     }
-    return commit({ ...catalog, products }, isNew ? `Agregaste "${saved.name}".` : `Guardaste "${saved.name}".`)
+    // Si lo marcó como destacado, va al final del carrete; si ya estaba, conserva su lugar.
+    const featuredIds = !featured
+      ? catalog.featured.filter((id) => id !== saved.id)
+      : catalog.featured.includes(saved.id)
+        ? catalog.featured
+        : [...catalog.featured, saved.id]
+    return commit({ ...catalog, products, featured: featuredIds }, isNew ? `Agregaste "${saved.name}".` : `Guardaste "${saved.name}".`)
   }
 
   function deleteProduct(product) {
     if (!window.confirm(`¿Borrar "${product.name}"? Se borran también sus fotos. No se puede deshacer.`)) return
     setEditing(null)
-    commit({ ...catalog, products: catalog.products.filter(({ id }) => id !== product.id) }, `Borraste "${product.name}".`)
+    commit(
+      { ...catalog, products: catalog.products.filter(({ id }) => id !== product.id), featured: catalog.featured.filter((id) => id !== product.id) },
+      `Borraste "${product.name}".`,
+    )
   }
 
   function saveLine(saved, isNew) {
@@ -443,6 +546,7 @@ function Panel({ user, onLogout }) {
   const tabs = [
     { id: 'products', label: 'Productos', count: catalog.products.length },
     { id: 'lines', label: 'Líneas', count: catalog.lines.length },
+    { id: 'featured', label: 'Destacados', count: catalog.featured.length },
   ]
 
   return (
@@ -488,6 +592,12 @@ function Panel({ user, onLogout }) {
             onEdit={(product) => setEditing({ kind: 'product', item: product })}
             onNew={(line) => setEditing({ kind: 'product', item: null, line })}
             onReorder={(products) => commit({ ...catalog, products }, 'Orden guardado.')}
+          />
+        ) : tab === 'featured' ? (
+          <FeaturedTab
+            catalog={catalog}
+            onEdit={(product) => setEditing({ kind: 'product', item: product })}
+            onChange={(featured, message) => commit({ ...catalog, featured }, message)}
           />
         ) : (
           <LinesTab

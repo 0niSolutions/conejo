@@ -66,6 +66,15 @@ function validate(catalog) {
     if (typeof product.hidden !== 'boolean' || typeof product.soldOut !== 'boolean') fail(`Faltan datos de "${product.name}".`)
     ids.add(product.id)
   }
+
+  // Destacados: ids de productos, en el orden en que se ven en el inicio.
+  if (!Array.isArray(catalog.featured)) fail('Falta la lista de destacados.')
+  const featured = new Set()
+  for (const id of catalog.featured) {
+    if (!ids.has(id)) fail('Hay un destacado que no corresponde a ningún producto.')
+    if (featured.has(id)) fail('Hay un producto repetido en destacados.')
+    featured.add(id)
+  }
 }
 
 // Borra las fotos subidas por el panel que ya no usa ningún producto ni línea.

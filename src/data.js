@@ -33,6 +33,9 @@ export const CATALOG = catalog.products
   .filter((product) => !product.hidden)
   .map(({ id, line, name, text, price, photos, soldOut }) => ({ id, tag: line, name, text, price, photos, soldOut }))
 
+// Productos destacados del inicio, en el orden elegido en el panel. Los ocultos no aparecen.
+export const FEATURED = (catalog.featured ?? []).map((id) => CATALOG.find((item) => item.id === id)).filter(Boolean)
+
 export const STATS = [
   { value: 1015, label: 'seguidores en Instagram' },
   { value: PRODUCTS.length, label: 'líneas de productos' },
