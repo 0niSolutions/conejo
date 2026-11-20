@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, useReducedMotion } from 'motion/react'
 import About from './components/About'
 import Cart from './components/Cart'
@@ -14,11 +14,10 @@ import Nav from './components/Nav'
 import Products from './components/Products'
 import { CartProvider } from './cart'
 
-// El panel solo existe con `npm run dev`: en la web publicada este import desaparece del build.
-const Admin = import.meta.env.DEV ? lazy(() => import('./admin/Admin')) : null
+// El panel ahora es una página aparte (/admin/). Los links viejos a #/admin llevan ahí.
+if (/^#\/admin\b/.test(window.location.hash)) window.location.replace('/admin/')
 
 function parseRoute() {
-  if (Admin && /^#\/admin\b/.test(window.location.hash)) return { page: 'admin' }
   const match = window.location.hash.match(/^#\/productos(?:\/([\w-]+))?/)
   return match ? { page: 'productos', tag: match[1] } : { page: 'inicio' }
 }
@@ -54,14 +53,6 @@ export default function App() {
   const [ready, setReady] = useState(Boolean(reducedMotion))
   const finishLoading = useCallback(() => setReady(true), [])
   const route = useRoute()
-
-  if (route.page === 'admin') {
-    return (
-      <Suspense fallback={null}>
-        <Admin />
-      </Suspense>
-    )
-  }
 
   return (
     <MotionConfig reducedMotion="user">

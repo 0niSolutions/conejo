@@ -1,46 +1,73 @@
-// Comunicación con la API local del panel (admin-api.js) y utilidades de fotos.
+// Comunicación con la API del panel y utilidades de fotos.
+//
+// - Publicado: la API es el Worker de Cloudflare (worker/index.js). Cloudflare Access pide el mail
+//   antes de dejar entrar, y cada "Guardar" es un commit en GitHub que vuelve a publicar la web.
+// - Con `npm run dev`: la API es admin-api.js, que escribe directo en los archivos del proyecto.
 
 const MAX_SIDE = 1400
 const QUALITY = 0.82
 
+export const LOCAL = import.meta.env.DEV
+export const SESSION_EXPIRED = 'conejo:sesion-vencida'
+// Cierra la sesión de Cloudflare Access.
+export const LOGOUT_URL = '/cdn-cgi/access/logout'
+
 async function request(path, options = {}) {
   let response
   try {
-    response = await fetch(`/api/admin${path}`, { ...options, headers: { 'X-Conejo-Admin': '1', ...options.headers } })
+    response = await fetch(`/api/admin${path}`, { ...options, redirect: 'manual', headers: { 'X-Conejo-Admin': '1', ...options.headers } })
   } catch {
-    throw new Error('No hay conexión con el panel. ¿Sigue corriendo `npm run dev`?')
+    throw new Error(LOCAL ? 'No hay conexión con el panel. ¿Sigue corriendo `npm run dev`?' : 'No hay conexión. Revisá internet y probá de nuevo.')
   }
+  // Si la sesión de Access venció, Cloudflare responde con una redirección a su pantalla de login.
+  const expired = response.type === 'opaqueredirect' || response.status === 401
+  if (expired) window.dispatchEvent(new Event(SESSION_EXPIRED))
   const data = await response.json().catch(() => ({}))
   if (!response.ok) {
-    // Si la sesión venció en medio del uso, el panel vuelve a la pantalla de login.
-    if (response.status === 401 && path !== '/login') window.dispatchEvent(new Event(SESSION_EXPIRED))
-    const error = new Error(data.error ?? `El servidor respondió ${response.status}.`)
+    const error = new Error(expired ? 'Tu sesión venció. Recargá la página para volver a entrar.' : (data.error ?? `El servidor respondió ${response.status}.`))
     error.status = response.status
     throw error
   }
   return data
 }
 
-export const SESSION_EXPIRED = 'conejo:sesion-vencida'
-
 export const getSession = () => request('/session')
 
-export const login = (user, password) =>
-  request('/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user, password }) })
+// Versión del catálogo que se cargó. Al guardar se manda, y si alguien guardó otra cosa en el medio,
+// la API no lo pisa.
+let version = null
 
-export const logout = () => request('/logout', { method: 'POST' })
+// Fotos subidas en esta sesión que todavía no se guardaron: ruta -> { blob, url }.
+// `blob` es el identificador de la foto en GitHub (null en local) y `url` la vista previa en el navegador.
+const pending = new Map()
 
-const post = (path, data) => request(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+export async function loadCatalog() {
+  const data = await request('/catalog')
+  version = data.version
+  return data.catalog
+}
 
-// Manda un código de 6 dígitos al mail, para crear la cuenta o recuperar la contraseña.
-export const requestCode = (email) => post('/code', { email })
+export async function saveCatalog(catalog) {
+  const uploads = Object.fromEntries([...pending].filter(([, item]) => item.blob).map(([path, item]) => [path, item.blob]))
+  const data = await request('/catalog', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ catalog, version, uploads }),
+  })
+  version = data.version
+  return data
+}
 
-export const confirmCode = (data) => post('/confirm', data)
+// Dirección para mostrar una foto en el panel. Las recién subidas se ven desde el navegador, y las
+// ya guardadas que todavía no se publicaron (el deploy tarda un par de minutos) se piden a la API.
+export const photoSrc = (path) => pending.get(path)?.url ?? path
 
-export const loadCatalog = () => request('/catalog')
-
-export const saveCatalog = (catalog) =>
-  request('/catalog', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(catalog) })
+export function photoFallback(event, path) {
+  const img = event.currentTarget
+  if (LOCAL || img.dataset.fallback) return
+  img.dataset.fallback = '1'
+  img.src = `/api/admin/photos/${path.split('/').pop()}`
+}
 
 // Achica la foto a 1400 px del lado más largo y la pasa a WebP antes de subirla.
 async function compress(file) {
@@ -64,12 +91,13 @@ async function compress(file) {
 
 export async function uploadPhoto(file, name) {
   const blob = await compress(file)
-  const { path } = await request(`/photos?name=${encodeURIComponent(slugify(name))}`, {
+  const data = await request(`/photos?name=${encodeURIComponent(slugify(name))}`, {
     method: 'POST',
     headers: { 'Content-Type': 'image/webp' },
     body: blob,
   })
-  return path
+  pending.set(data.path, { blob: data.blob, url: URL.createObjectURL(blob) })
+  return data.path
 }
 
 export function slugify(text) {

@@ -1,17 +1,26 @@
-import { randomBytes } from 'node:crypto'
+import { createHash } from 'node:crypto'
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadEnv } from 'vite'
-import { createAuth } from './admin-auth.js'
+import {
+  CATALOG_PATH,
+  MAX_CATALOG_BYTES,
+  MAX_PHOTO_BYTES,
+  PHOTOS_DIR,
+  PHOTO_FILE,
+  formatCatalog,
+  isWebp,
+  photoFileName,
+  usedPhotos,
+  validateCatalog,
+} from './worker/catalog-rules.js'
 
-// API del panel de administrador. Solo existe con `npm run dev`: la web publicada es estática
-// y no la incluye. Más adelante se reemplaza por una base de datos real.
+// API del panel con `npm run dev`: escribe directo en src/catalog.json y public/productos/.
+// Es para probar cambios en tu compu: sin login, y solo responde a pedidos de esta misma compu.
+// En la web publicada, la API es el Worker de Cloudflare (worker/index.js), que guarda en GitHub.
 const ROOT = path.dirname(fileURLToPath(import.meta.url))
-const CATALOG_FILE = path.join(ROOT, 'src', 'catalog.json')
-const PHOTOS_DIR = path.join(ROOT, 'public', 'productos')
-const PHOTO_PATH = /^\/productos\/([a-z0-9-]+-[a-f0-9]{8}\.webp)$/
-const MAX_PHOTO_BYTES = 8 * 1024 * 1024
+const CATALOG_FILE = path.join(ROOT, CATALOG_PATH)
+const PHOTOS = path.join(ROOT, PHOTOS_DIR)
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -36,55 +45,14 @@ function readBody(req, limit) {
   })
 }
 
-const isText = (value) => typeof value === 'string' && value.trim() !== ''
-const isSlug = (value) => typeof value === 'string' && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(value)
-const isPhoto = (value) => typeof value === 'string' && PHOTO_PATH.test(value)
+// Mismo identificador que usa git (y el Worker), para detectar si el archivo cambió por otro lado.
+const versionOf = (text) => createHash('sha1').update(`blob ${Buffer.byteLength(text)}\0`).update(text).digest('hex')
 
-function validate(catalog) {
-  const fail = (message) => {
-    throw new HttpError(400, message)
-  }
-  if (!catalog || !Array.isArray(catalog.lines) || !Array.isArray(catalog.products)) fail('El catálogo no tiene el formato esperado.')
-
-  const slugs = new Set()
-  for (const line of catalog.lines) {
-    if (!isSlug(line.slug) || slugs.has(line.slug)) fail(`La línea "${line.name}" tiene un identificador inválido o repetido.`)
-    if (!isText(line.name)) fail('Hay una línea sin nombre.')
-    if (typeof line.text !== 'string') fail(`La línea "${line.name}" no tiene descripción.`)
-    if (line.photo !== null && !isPhoto(line.photo)) fail(`La foto de la línea "${line.name}" no es válida.`)
-    slugs.add(line.slug)
-  }
-
-  const ids = new Set()
-  for (const product of catalog.products) {
-    if (!isSlug(product.id) || ids.has(product.id)) fail(`El producto "${product.name}" tiene un identificador inválido o repetido.`)
-    if (!isText(product.name)) fail('Hay un producto sin nombre.')
-    if (!slugs.has(product.line)) fail(`El producto "${product.name}" no pertenece a ninguna línea.`)
-    if (typeof product.text !== 'string') fail(`El producto "${product.name}" no tiene descripción.`)
-    if (!Number.isInteger(product.price) || product.price < 0) fail(`El precio de "${product.name}" no es válido.`)
-    if (!Array.isArray(product.photos) || !product.photos.every(isPhoto)) fail(`Las fotos de "${product.name}" no son válidas.`)
-    if (typeof product.hidden !== 'boolean' || typeof product.soldOut !== 'boolean') fail(`Faltan datos de "${product.name}".`)
-    ids.add(product.id)
-  }
-
-  // Destacados: ids de productos, en el orden en que se ven en el inicio.
-  if (!Array.isArray(catalog.featured)) fail('Falta la lista de destacados.')
-  const featured = new Set()
-  for (const id of catalog.featured) {
-    if (!ids.has(id)) fail('Hay un destacado que no corresponde a ningún producto.')
-    if (featured.has(id)) fail('Hay un producto repetido en destacados.')
-    featured.add(id)
-  }
-}
-
-// Borra las fotos subidas por el panel que ya no usa ningún producto ni línea.
 async function removeUnusedPhotos(catalog) {
-  const used = new Set([...catalog.lines.map((line) => line.photo), ...catalog.products.flatMap((product) => product.photos)])
-  const files = await readdir(PHOTOS_DIR).catch(() => [])
+  const used = usedPhotos(catalog)
+  const files = await readdir(PHOTOS).catch(() => [])
   await Promise.all(
-    files
-      .filter((file) => PHOTO_PATH.test(`/productos/${file}`) && !used.has(`/productos/${file}`))
-      .map((file) => rm(path.join(PHOTOS_DIR, file), { force: true })),
+    files.filter((file) => PHOTO_FILE.test(file) && !used.has(`/productos/${file}`)).map((file) => rm(path.join(PHOTOS, file), { force: true })),
   )
 }
 
@@ -98,52 +66,57 @@ function sameOrigin(origin, host) {
   }
 }
 
-async function handle(req, res, auth) {
+async function handle(req) {
+  // Solo esta compu: aunque se corra `npm run dev -- --host`, nadie de la red puede usar el panel.
+  if (!LOOPBACK.has(req.socket.remoteAddress)) throw new HttpError(403, 'El panel local solo se puede usar desde la compu donde corre `npm run dev`.')
   // Un header propio obliga al navegador a pedir permiso antes de un pedido desde otro sitio,
   // así ninguna página abierta en otra pestaña puede modificar el catálogo.
-  // El panel es solo para esta compu: aunque se corra `npm run dev -- --host`, nadie de la red puede usarlo
-  // (sin HTTPS, la contraseña viajaría sin cifrar).
-  if (!LOOPBACK.has(req.socket.remoteAddress)) throw new HttpError(403, 'El panel solo se puede usar desde la compu donde corre `npm run dev`.')
   if (req.headers['x-conejo-admin'] !== '1') throw new HttpError(403, 'Pedido no permitido.')
-  // Además, si el navegador dice de qué página viene el pedido, tiene que ser esta misma.
   if (req.headers.origin && !sameOrigin(req.headers.origin, req.headers.host)) throw new HttpError(403, 'Pedido no permitido.')
   const url = new URL(req.url, 'http://localhost')
+  const route = `${req.method} ${url.pathname}`
 
-  const answer = await auth.handle(req, res, url)
-  if (answer !== undefined) return answer
+  if (route === 'GET /session') return { authenticated: true, user: null, local: true }
 
-  // Todo lo demás necesita haber iniciado sesión.
-  if (!(await auth.isLoggedIn(req))) throw new HttpError(401, 'Tu sesión se cerró. Volvé a entrar.')
-
-  if (url.pathname === '/catalog' && req.method === 'GET') {
-    return JSON.parse(await readFile(CATALOG_FILE, 'utf8'))
+  if (route === 'GET /catalog') {
+    const text = await readFile(CATALOG_FILE, 'utf8')
+    return { catalog: JSON.parse(text), version: versionOf(text) }
   }
 
-  if (url.pathname === '/catalog' && req.method === 'PUT') {
-    let catalog
+  if (route === 'PUT /catalog') {
+    let data
     try {
-      catalog = JSON.parse((await readBody(req, 2 * 1024 * 1024)).toString('utf8'))
+      data = JSON.parse((await readBody(req, MAX_CATALOG_BYTES)).toString('utf8'))
     } catch (error) {
       throw error instanceof HttpError ? error : new HttpError(400, 'El catálogo no es un JSON válido.')
     }
-    validate(catalog)
+    const { catalog, version } = data ?? {}
+    try {
+      validateCatalog(catalog)
+    } catch (error) {
+      throw new HttpError(400, error.message)
+    }
+    const current = await readFile(CATALOG_FILE, 'utf8')
+    if (version && version !== versionOf(current)) {
+      throw new HttpError(409, 'El catálogo cambió desde otro lado (otra pestaña o un git pull). Recargá la página para ver la última versión.')
+    }
+    const text = formatCatalog(catalog)
     const temp = `${CATALOG_FILE}.tmp`
-    await writeFile(temp, JSON.stringify(catalog, null, 2) + '\n')
+    await writeFile(temp, text)
     await rename(temp, CATALOG_FILE)
     await removeUnusedPhotos(catalog)
-    return catalog
+    // En Windows git deja los archivos con CRLF: eso solo no cuenta como cambio.
+    return { catalog, version: versionOf(text), changed: text !== current.replace(/\r\n/g, '\n') }
   }
 
-  if (url.pathname === '/photos' && req.method === 'POST') {
+  if (route === 'POST /photos') {
     if (req.headers['content-type'] !== 'image/webp') throw new HttpError(415, 'La foto tiene que llegar en formato WebP.')
     const body = await readBody(req, MAX_PHOTO_BYTES)
-    const isWebp = body.subarray(0, 4).toString('latin1') === 'RIFF' && body.subarray(8, 12).toString('latin1') === 'WEBP'
-    if (!isWebp) throw new HttpError(415, 'El archivo no es una imagen WebP.')
-    const base = (url.searchParams.get('name') ?? '').match(/[a-z0-9]+/g)?.join('-').slice(0, 40) || 'foto'
-    const file = `${base}-${randomBytes(4).toString('hex')}.webp`
-    await mkdir(PHOTOS_DIR, { recursive: true })
-    await writeFile(path.join(PHOTOS_DIR, file), body)
-    return { path: `/productos/${file}` }
+    if (!isWebp(new Uint8Array(body))) throw new HttpError(415, 'El archivo no es una imagen WebP.')
+    const file = photoFileName(url.searchParams.get('name'))
+    await mkdir(PHOTOS, { recursive: true })
+    await writeFile(path.join(PHOTOS, file), body)
+    return { path: `/productos/${file}`, blob: null }
   }
 
   throw new HttpError(404, 'No existe esa ruta.')
@@ -162,13 +135,11 @@ export default function adminApi() {
       return []
     },
     configureServer(server) {
-      const env = loadEnv(server.config.mode, server.config.envDir || server.config.root, '')
-      const auth = createAuth({ root: ROOT, env, logger: server.config.logger, HttpError, readBody })
       server.middlewares.use('/api/admin', (req, res) => {
-        // Nada de la API (sesión, catálogo) queda guardado en el caché del navegador.
+        // Nada de la API queda guardado en el caché del navegador.
         res.setHeader('Cache-Control', 'no-store')
         res.setHeader('X-Content-Type-Options', 'nosniff')
-        handle(req, res, auth)
+        handle(req)
           .then((data) => {
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify(data))

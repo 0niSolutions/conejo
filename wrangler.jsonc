@@ -1,0 +1,20 @@
+// Configuración de Cloudflare Workers. Ver docs/PANEL-CLOUDFLARE.md para los pasos de instalación.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "conejo",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    // La web compilada por `npm run build`.
+    "directory": "./dist",
+    // Solo la API pasa por el Worker; el resto (páginas, fotos, video) lo sirve Cloudflare directo.
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    "GITHUB_REPO": "0niSolutions/conejo",
+    "GITHUB_BRANCH": "main"
+  },
+  // GITHUB_TOKEN, ACCESS_TEAM_DOMAIN, ACCESS_AUD y ADMIN_EMAILS se cargan como secretos en Cloudflare
+  // (no van acá, y un deploy no los borra).
+  "observability": { "enabled": true }
+}
