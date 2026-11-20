@@ -3,3 +3,4 @@ dist
 *.local
 admin-users.json
 admin-users.json.tmp
+.wrangler

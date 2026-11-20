@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { ArrowLeft, ArrowRight, ImagePlus, LoaderCircle, Star, X } from 'lucide-react'
 import { DEFAULT_ART } from '../data'
-import { uploadPhoto } from './api'
+import { photoFallback, photoSrc, uploadPhoto } from './api'
 
 export const INPUT =
   'w-full rounded-xl border border-line bg-ink px-3.5 py-2.5 text-bone placeholder:text-ash/60 transition-colors hover:border-ash focus:border-bone focus:outline-none'
@@ -48,7 +48,7 @@ export function Thumb({ photo, art, className = 'size-14' }) {
   return (
     <span className={`grid shrink-0 place-items-center overflow-hidden rounded-lg border border-line bg-coal ${className}`}>
       {photo ? (
-        <img src={photo} alt="" className="size-full object-cover" />
+        <img src={photoSrc(photo)} onError={(event) => photoFallback(event, photo)} alt="" className="size-full object-cover" />
       ) : (
         <svg viewBox="0 0 200 200" aria-hidden="true" className="size-full p-1.5" fill="none" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round">
           {lines.map((d) => (
@@ -145,7 +145,7 @@ export function PhotoPicker({ photos, setPhotos, name, multiple = true, onUpload
           {photos.map((photo, i) => (
             <li key={photo} className="overflow-hidden rounded-xl border border-line bg-ink">
               <div className="relative aspect-square">
-                <img src={photo} alt={`Foto ${i + 1}`} className="size-full object-cover" />
+                <img src={photoSrc(photo)} onError={(event) => photoFallback(event, photo)} alt={`Foto ${i + 1}`} className="size-full object-cover" />
                 {multiple && i === 0 && (
                   <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-bone px-2 py-0.5 text-xs font-bold text-ink">
                     <Star className="size-3 fill-current" /> Principal

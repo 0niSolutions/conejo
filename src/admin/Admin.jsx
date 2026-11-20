@@ -2,8 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowDown, ArrowUp, Check, CircleAlert, ExternalLink, LoaderCircle, LogOut, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
 import { formatPrice } from '../data'
-import { SESSION_EXPIRED, getSession, loadCatalog, logout, matches, parsePrice, saveCatalog, uniqueSlug } from './api'
-import Login from './Login'
+import { LOCAL, LOGOUT_URL, SESSION_EXPIRED, getSession, loadCatalog, matches, parsePrice, saveCatalog, uniqueSlug } from './api'
 import { Badge, Drawer, Field, ICON_BUTTON, INPUT, PRIMARY, PhotoPicker, SECONDARY, Thumb, Toggle } from './parts'
 
 function swap(list, a, b) {
@@ -410,54 +409,48 @@ function FeaturedTab({ catalog, onEdit, onChange }) {
   )
 }
 
-// Pantalla de login delante del panel. La API rechaza todo pedido sin sesión, esto solo decide qué mostrar.
+// El login lo hace Cloudflare Access antes de que cargue esta página: pide el mail y manda un código.
+// Acá solo se pregunta con qué mail se entró. La API igual rechaza todo pedido sin una sesión válida.
 export default function Admin() {
   const [session, setSession] = useState({ state: 'checking' })
 
   useEffect(() => {
-    refresh()
-    const onExpired = () => refresh({ notice: 'Tu sesión se cerró. Volvé a entrar para seguir.' })
+    getSession().then(
+      ({ user }) => setSession({ state: 'in', user }),
+      (error) => setSession({ state: 'error', message: error.message }),
+    )
+    const onExpired = () => setSession({ state: 'expired' })
     window.addEventListener(SESSION_EXPIRED, onExpired)
     return () => window.removeEventListener(SESSION_EXPIRED, onExpired)
   }, [])
 
-  // Vuelve a preguntar al servidor: así se sabe con qué usuario se entró y si sigue la cuenta de prueba.
-  function refresh(extra = {}) {
-    return getSession().then(
-      ({ authenticated, user, demo }) => setSession({ state: authenticated ? 'in' : 'out', user, demo, ...extra }),
-      (error) => setSession({ state: 'error', message: error.message }),
-    )
-  }
-
-  async function exit() {
-    await logout().catch(() => {})
-    refresh()
-  }
-
-  if (session.state === 'in') return <Panel user={session.user} onLogout={exit} />
-  if (session.state === 'out') return <Login notice={session.notice} demo={session.demo} onLogin={() => refresh()} />
+  if (session.state === 'in') return <Panel user={session.user} />
   return (
     <main className="grid min-h-dvh place-items-center px-4 text-center">
-      {session.state === 'error' ? (
+      {session.state === 'checking' ? (
+        <LoaderCircle className="size-8 animate-spin text-ash" aria-label="Cargando" />
+      ) : (
         <div>
           <CircleAlert className="mx-auto size-10 text-sun-2" />
-          <p className="mt-4 font-semibold">No se pudo abrir el panel.</p>
-          <p className="mt-1 text-ash">{session.message}</p>
+          <p className="mt-4 font-semibold">{session.state === 'expired' ? 'Tu sesión venció.' : 'No se pudo abrir el panel.'}</p>
+          <p className="mt-1 text-ash">{session.state === 'expired' ? 'Volvé a entrar con tu mail para seguir.' : session.message}</p>
+          <button type="button" className={`${PRIMARY} mt-6`} onClick={() => window.location.reload()}>
+            Volver a entrar
+          </button>
         </div>
-      ) : (
-        <LoaderCircle className="size-8 animate-spin text-ash" aria-label="Cargando" />
       )}
     </main>
   )
 }
 
-function Panel({ user, onLogout }) {
+function Panel({ user }) {
   const [catalog, setCatalog] = useState(null)
   const [loadError, setLoadError] = useState(null)
   const [status, setStatus] = useState(null)
   const [tab, setTab] = useState('products')
   const [editing, setEditing] = useState(null)
   const queue = useRef(Promise.resolve())
+  const latest = useRef(null)
 
   useEffect(() => {
     document.title = 'Panel · CONEJO.08'
@@ -470,14 +463,18 @@ function Panel({ user, onLogout }) {
     return () => clearTimeout(timer)
   }, [status])
 
-  // Muestra el cambio al instante y lo guarda en orden. Si falla, vuelve a lo que hay en el archivo.
+  // Muestra el cambio al instante y lo guarda en orden. Si falla, vuelve a lo último guardado.
+  // Si se hacen varios cambios seguidos mientras se guarda (por ejemplo, reordenar), se guarda solo
+  // el último estado, que ya los incluye a todos: un solo commit y un solo deploy en vez de varios.
   function commit(next, message) {
     setCatalog(next)
-    const run = queue.current.then(
-      () =>
-        saveCatalog(next).then(
-          () => {
-            setStatus({ type: 'ok', text: message })
+    latest.current = next
+    const run = queue.current.then(() =>
+      latest.current !== next
+        ? true
+        : saveCatalog(next).then(
+          ({ changed }) => {
+            setStatus({ type: 'ok', text: !LOCAL && changed ? `${message} La web se actualiza en 1 o 2 minutos.` : message })
             return true
           },
           async (error) => {
@@ -555,15 +552,21 @@ function Panel({ user, onLogout }) {
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-8">
           <div>
             <h1 className="font-brush text-3xl leading-none">Panel</h1>
-            <p className="mt-1 text-xs text-ash">Solo en tu compu. Los cambios se guardan en src/catalog.json; para publicarlos, hacé push.</p>
+            <p className="mt-1 text-xs text-ash">
+              {LOCAL
+                ? 'Modo local: los cambios se guardan en src/catalog.json; para publicarlos, hacé push.'
+                : 'Cada cambio se publica solo en la web en 1 o 2 minutos.'}
+            </p>
           </div>
           <div className="flex shrink-0 gap-2">
             <a href="/#/productos" target="_blank" rel="noreferrer" className={SECONDARY}>
               Ver la web <ExternalLink className="size-4" />
             </a>
-            <button type="button" className={SECONDARY} onClick={onLogout} title={user ? `Entraste como ${user}` : undefined}>
-              Salir{user && <span className="hidden font-normal text-ash sm:inline">({user})</span>} <LogOut className="size-4" />
-            </button>
+            {!LOCAL && (
+              <a href={LOGOUT_URL} className={SECONDARY} title={user ? `Entraste como ${user}` : undefined}>
+                Salir <LogOut className="size-4" />
+              </a>
+            )}
           </div>
         </div>
       </header>
