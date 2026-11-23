@@ -14,10 +14,9 @@ import Nav from './components/Nav'
 import Products from './components/Products'
 import { CartProvider } from './cart'
 
-// El panel ahora es una página aparte (/admin/). Los links viejos a #/admin llevan ahí.
-if (/^#\/admin\b/.test(window.location.hash)) window.location.replace('/admin/')
-
 function parseRoute() {
+  // El panel ahora es una página aparte (/admin/). Los links viejos a #/admin llevan ahí.
+  if (/^#\/admin\b/.test(window.location.hash)) window.location.replace('/admin/')
   const match = window.location.hash.match(/^#\/productos(?:\/([\w-]+))?/)
   return match ? { page: 'productos', tag: match[1] } : { page: 'inicio' }
 }

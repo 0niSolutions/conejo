@@ -443,6 +443,8 @@ export default function Admin() {
   )
 }
 
+const FAILED = Symbol('guardado fallido')
+
 function Panel({ user }) {
   const [catalog, setCatalog] = useState(null)
   const [loadError, setLoadError] = useState(null)
@@ -466,11 +468,15 @@ function Panel({ user }) {
   // Muestra el cambio al instante y lo guarda en orden. Si falla, vuelve a lo último guardado.
   // Si se hacen varios cambios seguidos mientras se guarda (por ejemplo, reordenar), se guarda solo
   // el último estado, que ya los incluye a todos: un solo commit y un solo deploy en vez de varios.
+  // Si un guardado falla, los cambios que quedaron en la fila se descartan (ya incluían el que falló):
+  // así, si falló porque otra persona guardó en el medio, no se pisa lo suyo con el guardado siguiente.
   function commit(next, message) {
     setCatalog(next)
     latest.current = next
     const run = queue.current.then(() =>
-      latest.current !== next
+      latest.current === FAILED
+        ? false
+        : latest.current !== next
         ? true
         : saveCatalog(next).then(
           ({ changed }) => {
@@ -478,6 +484,7 @@ function Panel({ user }) {
             return true
           },
           async (error) => {
+            latest.current = FAILED
             setStatus({ type: 'error', text: error.message })
             setCatalog(withFeatured(await loadCatalog().catch(() => next)))
             return false
