@@ -74,9 +74,12 @@ function fromBase64(text) {
 }
 
 // Catálogo tal como está ahora en GitHub, y su versión (para detectar cambios hechos por otra persona).
+// Lee por el commit exacto de la rama (no por el nombre de la rama): justo después de guardar,
+// GitHub puede tardar unos segundos en actualizar algunas respuestas y devolver el catálogo anterior.
 export async function readCatalog(env) {
   const { branch } = config(env)
-  const file = await json(await github(env, `/contents/${CATALOG_PATH}?ref=${encodeURIComponent(branch)}`))
+  const ref = await json(await github(env, `/git/ref/heads/${encodeURIComponent(branch)}`))
+  const file = await json(await github(env, `/contents/${CATALOG_PATH}?ref=${ref.object.sha}`))
   const text = new TextDecoder().decode(fromBase64(file.content))
   return { catalog: JSON.parse(text), version: file.sha }
 }

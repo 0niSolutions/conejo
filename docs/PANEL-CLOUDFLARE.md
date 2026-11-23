@@ -13,6 +13,11 @@ Cómo queda armado:
 Hay que hacer 4 cosas, una sola vez: un token de GitHub, conectar el repo a Cloudflare, configurar
 Access y cargar 4 valores en el Worker.
 
+> **Para el panel online hace falta un dominio cargado en Cloudflare.** Access solo puede proteger
+> una ruta (`/admin`) en un dominio propio de la cuenta. En la dirección gratis `*.workers.dev`,
+> Access protege el sitio entero: la web pública también pediría login. Sin dominio, la web se puede
+> publicar igual en `workers.dev`, y el catálogo se sigue editando con el panel local (`npm run dev`).
+
 ---
 
 ## 1. Token de GitHub
@@ -41,8 +46,12 @@ Es la llave con la que el Worker guarda los cambios en el repo. Tiene que poder 
    - **Build variables:** `NODE_VERSION` = `22`
 3. **Deploy**. Al terminar te da una dirección `conejo.<tu-cuenta>.workers.dev` con la web andando.
    El panel todavía no funciona: falta Access.
-4. **Dominio propio** (recomendado): en el Worker → **Settings** → **Domains & Routes** → **Add** →
-   **Custom domain**. Si el dominio ya está en Cloudflare, el DNS y el HTTPS se configuran solos.
+4. **Dominio propio** (necesario para el panel):
+   - Si el dominio está comprado en otro lado (NIC Argentina, GoDaddy, etc.): Cloudflare →
+     **Domains** → **Add a domain** → plan **Free**. Cloudflare te da dos *nameservers*; cambialos en
+     el panel de donde compraste el dominio. Puede tardar desde minutos hasta 24 horas en activarse.
+   - Con el dominio activo: Worker → **Settings** → **Domains & Routes** → **Add** → **Custom domain**.
+     El DNS y el HTTPS se configuran solos.
 
 ## 3. Cloudflare Access (el login del panel)
 
@@ -62,9 +71,10 @@ Es la llave con la que el Worker guarda los cambios en el repo. Tiene que poder 
 5. Abrí la aplicación → **Overview** (o *Basic information*) y copiá el
    **Application Audience (AUD) Tag**: es un texto largo de letras y números.
 
-**La dirección `workers.dev`:** si usás dominio propio, apagala para que haya una sola puerta de entrada:
+**La dirección `workers.dev`:** con el dominio andando, apagala para que haya una sola puerta de entrada:
 Worker → **Settings** → **Domains & Routes** → `workers.dev` → **Disable** (y lo mismo con *Preview URLs*).
 Igual, aunque quede prendida, el Worker no deja usar la API sin un pase de Access válido.
+No uses el interruptor "Cloudflare Access" de `workers.dev`: protege el sitio entero, no solo el panel.
 
 ## 4. Cargar los valores en el Worker
 
