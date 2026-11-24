@@ -221,6 +221,18 @@
       "soldOut": false
     },
     {
+      "id": "asdasdasdasd",
+      "line": "rinoneras",
+      "name": "asdasdasdasd",
+      "text": "",
+      "price": 49999,
+      "photos": [
+        "/productos/asdasdasdasd-57df4b69.webp"
+      ],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
       "id": "mochila-diaria",
       "line": "mochilas",
       "name": "Mochila Diaria",
@@ -767,6 +779,7 @@
     "bolso-fin-de-semana",
     "funda-criolla",
     "matero-clasico",
-    "bandolera-clasica"
+    "bandolera-clasica",
+    "asdasdasdasd"
   ]
 }
