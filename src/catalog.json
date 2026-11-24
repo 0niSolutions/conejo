@@ -221,6 +221,18 @@
       "soldOut": false
     },
     {
+      "id": "rinonera-prueba",
+      "line": "rinoneras",
+      "name": "riñonera prueba",
+      "text": "riñonera que te deja sin aliento",
+      "price": 50000,
+      "photos": [
+        "/productos/rinonera-prueba-c87bd789.webp"
+      ],
+      "hidden": false,
+      "soldOut": false
+    },
+    {
       "id": "mochila-diaria",
       "line": "mochilas",
       "name": "Mochila Diaria",
