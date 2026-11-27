@@ -151,16 +151,6 @@
   ],
   "products": [
     {
-      "id": "rinonera-clasica",
-      "line": "rinoneras",
-      "name": "Riñonera Clásica",
-      "text": "Un cierre, un bolsillo y listo.",
-      "price": 24000,
-      "photos": [],
-      "hidden": false,
-      "soldOut": false
-    },
-    {
       "id": "rinonera-urbana",
       "line": "rinoneras",
       "name": "Riñonera Urbana",
