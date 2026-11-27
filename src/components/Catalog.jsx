@@ -84,7 +84,7 @@ export function CatalogCard({ item }) {
           )}
         </div>
         <div className="relative flex flex-1 flex-col border-t border-line p-4 sm:p-5">
-          <a href={`#/productos/${line.slug}`} className="w-fit text-xs tracking-wide text-ash uppercase transition-colors hover:text-bone">
+          <a href={`/productos/${line.slug}`} className="w-fit text-xs tracking-wide text-ash uppercase transition-colors hover:text-bone">
             {line.name}
           </a>
           <h3 className="mt-1 text-base font-bold sm:text-lg">
@@ -171,9 +171,9 @@ export default function Catalog({ tag }) {
       </p>
 
       <nav aria-label="Líneas de productos" className="mt-8 flex flex-wrap gap-2">
-        <Filter href="#/productos" label="Todos" active={!line} />
+        <Filter href="/productos" label="Todos" active={!line} />
         {PRODUCTS.map(({ slug, name }) => (
-          <Filter key={slug} href={`#/productos/${slug}`} label={name} active={line?.slug === slug} />
+          <Filter key={slug} href={`/productos/${slug}`} label={name} active={line?.slug === slug} />
         ))}
       </nav>
 

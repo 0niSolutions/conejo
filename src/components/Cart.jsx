@@ -107,7 +107,7 @@ function Panel() {
             </motion.span>
             <p className="text-ash">Todavía no agregaste nada.</p>
             <a
-              href="#/productos"
+              href="/productos"
               onClick={() => setOpen(false)}
               className="rounded-full border border-bone px-5 py-2.5 text-sm font-medium transition-colors hover:bg-bone hover:text-ink"
             >

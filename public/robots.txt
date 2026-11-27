@@ -1,0 +1,7 @@
+# Buscadores y asistentes de IA pueden leer toda la web pública.
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://conejo08.com.ar/sitemap.xml

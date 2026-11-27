@@ -19,7 +19,7 @@ function ProductCard({ product, index }) {
       transition={{ duration: 0.8, delay: (index % 4) * 0.09, ease: [0.22, 1, 0.36, 1] }}
     >
       <motion.a
-        href={`#/productos/${product.slug}`}
+        href={`/productos/${product.slug}`}
         {...tilt}
         className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-coal transition-colors hover:border-ash"
       >
@@ -53,7 +53,7 @@ export default function Products() {
       <SectionHeading
         action={
           <MagneticLink
-            href="#/productos"
+            href="/productos"
             className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-bone px-5 py-2.5 text-sm font-medium transition-colors hover:bg-bone hover:text-ink"
           >
             Ver más <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />

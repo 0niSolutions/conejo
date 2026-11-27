@@ -8,7 +8,10 @@
     // La web compilada por `npm run build`.
     "directory": "./dist",
     // Solo la API pasa por el Worker; el resto (páginas, fotos, video) lo sirve Cloudflare directo.
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*"],
+    // Cada página tiene su HTML (scripts/prerender.mjs): /productos -> productos.html. Una dirección
+    // que no existe recibe 404.html con código 404, en vez de la respuesta de la API.
+    "not_found_handling": "404-page"
   },
   "vars": {
     "GITHUB_REPO": "0niSolutions/conejo",

@@ -5,10 +5,10 @@ export const WHATSAPP_URL = 'https://wa.me/5493875269754'
 export const ONI_URL = 'https://www.onisolutions.com.ar/'
 
 export const NAV_LINKS = [
-  { id: 'inicio', label: 'Inicio', href: '#inicio' },
-  { id: 'sobre-mi', label: 'Sobre mí', href: '#sobre-mi' },
-  { id: 'productos', label: 'Productos', href: '#/productos' },
-  { id: 'redes', label: 'Redes', href: '#redes' },
+  { id: 'inicio', label: 'Inicio', href: '/#inicio' },
+  { id: 'sobre-mi', label: 'Sobre mí', href: '/#sobre-mi' },
+  { id: 'productos', label: 'Productos', href: '/productos' },
+  { id: 'redes', label: 'Redes', href: '/#redes' },
 ]
 
 // Dibujo para las líneas creadas desde el panel, que no tienen uno propio.

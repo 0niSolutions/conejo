@@ -44,7 +44,7 @@ export default function Nav({ ready, page }) {
       transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className={`mx-auto flex max-w-7xl items-center justify-between px-4 transition-all duration-300 sm:px-8 ${compact ? 'py-2' : 'py-3 sm:py-5'}`}>
-        <a href="#inicio" className="flex items-center gap-3">
+        <a href="/#inicio" className="flex items-center gap-3">
           <motion.span whileHover={{ rotate: 360 }} transition={{ duration: 0.9, ease: 'easeInOut' }} className="block">
             <Logo className={`transition-all duration-300 ${compact ? 'size-11' : 'size-14 sm:size-16'}`} />
           </motion.span>

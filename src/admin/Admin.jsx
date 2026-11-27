@@ -804,7 +804,7 @@ function Panel({ user }) {
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
-            <a href="/#/productos" target="_blank" rel="noreferrer" className={SECONDARY}>
+            <a href="/productos" target="_blank" rel="noreferrer" className={SECONDARY}>
               Ver la web <ExternalLink className="size-4" />
             </a>
             {!LOCAL && (

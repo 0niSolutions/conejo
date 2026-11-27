@@ -83,7 +83,9 @@ export default function Hero({ play }) {
 
       {/* Ocupa todo el ancho por encima de la mochila: solo los botones y las letras reciben el puntero. */}
       <motion.div style={{ y: titleY }} className="pointer-events-none relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-8 [&_a]:pointer-events-auto [&_h1_span]:pointer-events-auto">
-        <h1 aria-label={TITLE} className="-rotate-3 font-brush text-[15vw] leading-none whitespace-nowrap sm:text-[6rem] xl:text-[8rem]">
+        <h1 className="-rotate-3 font-brush text-[15vw] leading-none whitespace-nowrap sm:text-[6rem] xl:text-[8rem]">
+          {/* Para Google y lectores de pantalla: el nombre y qué es (las letras animadas son decorativas). */}
+          <span className="sr-only">CONEJO.08, marroquinería artesanal en Salta</span>
           {TITLE.split('').map((letter, i) => (
             <motion.span
               key={i}

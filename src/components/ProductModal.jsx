@@ -219,7 +219,7 @@ function ProductModal({ item, photos, index: startIndex, onClose }) {
           <Viewer photos={photos} index={index} setIndex={setIndex} name={item.name} line={line} />
 
           <div className="flex flex-col px-2 pb-4 md:py-6 md:pr-4">
-            <a href={`#/productos/${line.slug}`} onClick={onClose} className="w-fit text-xs tracking-wide text-ash uppercase transition-colors hover:text-bone">
+            <a href={`/productos/${line.slug}`} onClick={onClose} className="w-fit text-xs tracking-wide text-ash uppercase transition-colors hover:text-bone">
               {line.name}
             </a>
             <h2 className="mt-2 text-3xl font-bold sm:text-4xl">{item.name}</h2>

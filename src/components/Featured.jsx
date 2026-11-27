@@ -122,7 +122,7 @@ function Carousel({ items }) {
           <div className="flex shrink-0 items-center gap-3">
             {arrows}
             <MagneticLink
-              href="#/productos"
+              href="/productos"
               className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-bone px-5 py-2.5 text-sm font-medium transition-colors hover:bg-bone hover:text-ink"
             >
               Ver más <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />
