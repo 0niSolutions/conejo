@@ -6,7 +6,6 @@ import { InstagramIcon, MagneticLink, WhatsAppIcon } from './ui'
 import { INSTAGRAM_URL, WHATSAPP_URL } from '../data'
 
 const TITLE = 'CONEJO.08'
-const SUFFIX_AT = TITLE.indexOf('.')
 const TAGLINE = ['Artesanal', 'Hecho a mano', 'Salteño']
 
 const STREAKS = [
@@ -84,13 +83,12 @@ export default function Hero({ play }) {
 
       {/* Ocupa todo el ancho por encima de la mochila: solo los botones y las letras reciben el puntero. */}
       <motion.div style={{ y: titleY }} className="pointer-events-none relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-8 [&_a]:pointer-events-auto [&_h1_span]:pointer-events-auto">
-        <h1 aria-label={TITLE} className="-rotate-3 font-brush text-[15vw] leading-none whitespace-nowrap sm:text-[7rem] xl:text-[8rem]">
+        <h1 aria-label={TITLE} className="-rotate-3 font-brush text-[15vw] leading-none whitespace-nowrap sm:text-[6rem] xl:text-[8rem]">
           {TITLE.split('').map((letter, i) => (
             <motion.span
               key={i}
               aria-hidden="true"
-              // El ".08" va más chico para que el nombre entre en una línea también en el celular.
-              className={i >= SUFFIX_AT ? 'inline-block text-[0.55em]' : 'inline-block'}
+              className="inline-block"
               initial={{ y: 90, opacity: 0, rotate: -18, scale: 1.4 }}
               animate={play ? { y: 0, opacity: 1, rotate: 0, scale: 1 } : {}}
               whileHover={{ y: -12, rotate: -6, color: '#f2a24f' }}

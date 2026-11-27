@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowDown, ArrowUp, Check, CircleAlert, ExternalLink, LoaderCircle, LogOut, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, CircleAlert, ExternalLink, LoaderCircle, LogOut, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { formatPrice } from '../data'
-import { LOCAL, LOGOUT_URL, SESSION_EXPIRED, getSession, loadCatalog, matches, parsePrice, saveCatalog, uniqueSlug } from './api'
-import { Badge, Drawer, Field, ICON_BUTTON, INPUT, PRIMARY, PhotoPicker, SECONDARY, Thumb, Toggle } from './parts'
+import { LOCAL, LOGOUT_URL, SESSION_EXPIRED, getSession, loadCatalog, matches, parsePrice, photoFallback, photoSrc, saveCatalog, uniqueSlug } from './api'
+import { Badge, Drawer, Field, ICON_BUTTON, INPUT, PRIMARY, PhotoPicker, SECONDARY, Thumb, Toggle, VideoPicker } from './parts'
 
 function swap(list, a, b) {
   const next = [...list]
@@ -37,12 +37,87 @@ function confirmDiscard(dirty) {
   return !dirty || window.confirm('Tenés cambios sin guardar. ¿Querés descartarlos?')
 }
 
+// Elige la foto del carrete entre las del producto, o una propia subida aparte.
+function FeaturedPhotoChooser({ photos, extra, selected, onSelect, setExtra, name, onUploadingChange, error }) {
+  const setExtraPhotos = useMemo(() => (update) => setExtra((current) => update(current ? [current] : [])[0] ?? null), [setExtra])
+  return (
+    <div className="rounded-xl border border-line p-3.5">
+      <p className="text-sm font-semibold">Foto para el carrete</p>
+      <p className="mt-0.5 mb-3 text-sm text-ash">Se ve sola, sin precio ni descripción. Al tocarla se abre este producto.</p>
+      {(photos.length > 0 || extra) && (
+        <ul className="mb-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
+          {[...photos, ...(extra ? [extra] : [])].map((photo, i) => (
+            <li key={photo}>
+              <button
+                type="button"
+                aria-label={photo === extra ? 'Usar la foto subida aparte en el carrete' : `Usar la foto ${i + 1} en el carrete`}
+                aria-pressed={selected === photo}
+                className={`relative block aspect-square w-full overflow-hidden rounded-lg border-2 transition ${selected === photo ? 'border-sun-1' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                onClick={() => onSelect(photo)}
+              >
+                <img src={photoSrc(photo)} onError={(event) => photoFallback(event, photo)} alt="" className="size-full object-cover" />
+                {photo === extra && <span className="absolute inset-x-0 bottom-0 bg-ink/70 py-0.5 text-center text-[10px] font-semibold">Aparte</span>}
+                {selected === photo && (
+                  <span className="absolute top-1 right-1 grid size-5 place-items-center rounded-full bg-sun-1 text-ink">
+                    <Check className="size-3" />
+                  </span>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {!extra && (
+        <p className="mb-2 text-sm text-ash">{photos.length > 0 ? 'O subí una foto distinta solo para el carrete:' : 'Subí la foto que se va a ver en el carrete:'}</p>
+      )}
+      {!extra && <PhotoPicker photos={[]} setPhotos={setExtraPhotos} name={`${name || 'producto'} destacado`} multiple={false} onUploadingChange={onUploadingChange} />}
+      {extra && (
+        <button type="button" className="text-sm text-ash underline hover:text-bone" onClick={() => setExtra(null)}>
+          Quitar la foto subida aparte
+        </button>
+      )}
+      {error && <p className="mt-2 text-sm text-sun-2">{error}</p>}
+    </div>
+  )
+}
+
 function ProductEditor({ product, catalog, defaultLine, onSave, onDelete, onClose }) {
+  const entry = product ? catalog.featured.find((item) => item.product === product.id) : null
   const { draft, setDraft, set, dirty } = useDraft(
     product
-      ? { ...product, price: String(product.price), featured: catalog.featured.includes(product.id) }
-      : { name: '', line: defaultLine || catalog.lines[0].slug, text: '', price: '', photos: [], hidden: false, soldOut: false, featured: false },
+      ? {
+          ...product,
+          price: String(product.price),
+          featured: Boolean(entry),
+          featuredPhoto: entry?.photo ?? null,
+          // Foto del carrete que no es una de las del producto.
+          featuredExtra: entry && !product.photos.includes(entry.photo) ? entry.photo : null,
+        }
+      : {
+          name: '',
+          line: defaultLine || catalog.lines[0].slug,
+          text: '',
+          price: '',
+          photos: [],
+          hidden: false,
+          soldOut: false,
+          featured: false,
+          featuredPhoto: null,
+          featuredExtra: null,
+        },
   )
+  const [featuredUploading, setFeaturedUploading] = useState(false)
+  const setFeaturedExtra = useMemo(
+    () => (update) =>
+      setDraft((current) => {
+        const featuredExtra = typeof update === 'function' ? update(current.featuredExtra) : update
+        return { ...current, featuredExtra, featuredPhoto: featuredExtra ?? (current.featuredPhoto === current.featuredExtra ? null : current.featuredPhoto) }
+      }),
+    [setDraft],
+  )
+  // Si la foto elegida se quitó del producto, se usa la principal.
+  const featuredOptions = [...draft.photos, ...(draft.featuredExtra ? [draft.featuredExtra] : [])]
+  const featuredPhoto = featuredOptions.includes(draft.featuredPhoto) ? draft.featuredPhoto : (featuredOptions[0] ?? null)
   const [errors, setErrors] = useState({})
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -55,6 +130,7 @@ function ProductEditor({ product, catalog, defaultLine, onSave, onDelete, onClos
     const found = {}
     if (!draft.name.trim()) found.name = 'Poné un nombre.'
     if (price === null) found.price = 'Poné el precio en pesos, solo números (por ejemplo 45000).'
+    if (draft.featured && !featuredPhoto) found.featured = 'Para destacarlo, subí una foto.'
     setErrors(found)
     if (Object.keys(found).length > 0) return
 
@@ -69,7 +145,7 @@ function ProductEditor({ product, catalog, defaultLine, onSave, onDelete, onClos
       hidden: draft.hidden,
       soldOut: draft.soldOut,
     }
-    const ok = await onSave(saved, !product, draft.featured)
+    const ok = await onSave(saved, !product, draft.featured ? featuredPhoto : null)
     setSaving(false)
     if (ok) onClose()
   }
@@ -80,9 +156,9 @@ function ProductEditor({ product, catalog, defaultLine, onSave, onDelete, onClos
       onClose={close}
       footer={
         <>
-          <button type="submit" form="product-form" className={PRIMARY} disabled={saving || uploading}>
+          <button type="submit" form="product-form" className={PRIMARY} disabled={saving || uploading || featuredUploading}>
             {saving ? <LoaderCircle className="size-4 animate-spin" /> : <Check className="size-4" />}
-            {uploading ? 'Esperando las fotos…' : product ? 'Guardar cambios' : 'Agregar producto'}
+            {uploading || featuredUploading ? 'Esperando las fotos…' : product ? 'Guardar cambios' : 'Agregar producto'}
           </button>
           <button type="button" className={SECONDARY} onClick={close}>
             Cancelar
@@ -122,7 +198,19 @@ function ProductEditor({ product, catalog, defaultLine, onSave, onDelete, onClos
         <div className="space-y-3">
           <Toggle label="Mostrar en la web" hint="Apagalo para esconderlo sin borrarlo." checked={!draft.hidden} onChange={(value) => set('hidden')(!value)} />
           <Toggle label="Sin stock" hint="Se sigue viendo, pero no se puede agregar al carrito." checked={draft.soldOut} onChange={set('soldOut')} />
-          <Toggle label="Destacado" hint="Aparece en el carrete de destacados del inicio." checked={draft.featured} onChange={set('featured')} />
+          <Toggle label="Destacado" hint="Una foto suya aparece en el carrete del inicio." checked={draft.featured} onChange={set('featured')} />
+          {draft.featured && (
+            <FeaturedPhotoChooser
+              photos={draft.photos}
+              extra={draft.featuredExtra}
+              selected={featuredPhoto}
+              onSelect={set('featuredPhoto')}
+              setExtra={setFeaturedExtra}
+              name={draft.name}
+              onUploadingChange={setFeaturedUploading}
+              error={errors.featured}
+            />
+          )}
         </div>
       </form>
     </Drawer>
@@ -316,96 +404,225 @@ function LinesTab({ catalog, onEdit, onNew, onReorder }) {
   )
 }
 
-// Los catálogos guardados antes de que existieran los destacados no traen la lista.
-const withFeatured = (data) => ({ ...data, featured: Array.isArray(data.featured) ? data.featured : [] })
+// Texto de "Sobre mí" para los catálogos guardados antes de que se pudiera editar.
+const DEFAULT_BIO =
+  'Hago marroquinería artesanal desde Salta Capital. Riñoneras, mochilas, bolsos, fundas de guitarra, materos y más: cada pieza está hecha a mano, una por una. Si buscás el tuyo, escribime, atiendo todos los días.'
 
-function FeaturedTab({ catalog, onEdit, onChange }) {
-  const [adding, setAdding] = useState('')
-  const lineBySlug = useMemo(() => Object.fromEntries(catalog.lines.map((line) => [line.slug, line])), [catalog.lines])
-  const byId = useMemo(() => Object.fromEntries(catalog.products.map((product) => [product.id, product])), [catalog.products])
-  const featured = catalog.featured.map((id) => byId[id]).filter(Boolean)
-  const available = catalog.products.filter((product) => !catalog.featured.includes(product.id))
+// Completa lo que falte en catálogos guardados con versiones anteriores del panel. Los destacados
+// viejos eran solo ids de producto: pasan a ser la primera foto del producto (los que no tienen foto se quitan).
+function normalize(data) {
+  const byId = Object.fromEntries(data.products.map((product) => [product.id, product]))
+  const featured = (Array.isArray(data.featured) ? data.featured : [])
+    .map((item) => (typeof item === 'string' ? { photo: byId[item]?.photos[0], product: item } : item))
+    .filter((item, i, list) => item?.photo && byId[item.product] && list.findIndex((other) => other?.photo === item.photo) === i)
+  const site = { bio: DEFAULT_BIO, video: null, poster: null, ...data.site }
+  return { ...data, featured, site }
+}
 
-  function add(event) {
+// Desplegable de productos agrupados por línea.
+function ProductSelect({ catalog, value, onChange, placeholder, taken = new Set() }) {
+  return (
+    <select className={INPUT} value={value} onChange={(event) => onChange(event.target.value)}>
+      <option value="">{placeholder}</option>
+      {catalog.lines.map((line) => {
+        const options = catalog.products.filter((product) => product.line === line.slug)
+        if (options.length === 0) return null
+        return (
+          <optgroup key={line.slug} label={line.name}>
+            {options.map((product) => (
+              <option key={product.id} value={product.id} disabled={taken.has(product.id)}>
+                {product.name}
+                {product.hidden ? ' (oculto)' : ''}
+                {taken.has(product.id) ? ' (ya destacado)' : ''}
+              </option>
+            ))}
+          </optgroup>
+        )
+      })}
+    </select>
+  )
+}
+
+function FeaturedEditor({ item, catalog, onSave, onDelete, onClose }) {
+  const { draft, setDraft, set, dirty } = useDraft(item ? { ...item } : { photo: null, product: '' })
+  const [errors, setErrors] = useState({})
+  const [uploading, setUploading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const setPhotos = useMemo(() => (update) => setDraft((current) => ({ ...current, photo: update(current.photo ? [current.photo] : [])[0] ?? null })), [setDraft])
+  const product = catalog.products.find(({ id }) => id === draft.product)
+  const close = () => confirmDiscard(dirty) && onClose()
+
+  async function submit(event) {
     event.preventDefault()
-    const product = byId[adding]
-    if (!product) return
-    setAdding('')
-    onChange([...catalog.featured, product.id], `"${product.name}" ahora es destacado.`)
+    const found = {}
+    if (!draft.photo) found.photo = 'Subí una foto.'
+    if (!product) found.product = 'Elegí qué producto se abre al tocar la foto.'
+    setErrors(found)
+    if (Object.keys(found).length > 0) return
+    setSaving(true)
+    const ok = await onSave({ photo: draft.photo, product: draft.product }, item)
+    setSaving(false)
+    if (ok) onClose()
   }
 
   return (
-    <>
-      <p className="text-sm text-ash">
-        Son los productos del carrete del inicio, abajo de “Sobre mí”, en este orden. Si no hay ninguno, el carrete no se muestra.
-      </p>
-
-      <form className="mt-5 flex flex-wrap gap-3" onSubmit={add}>
-        <label className="min-w-52 flex-1">
-          <span className="sr-only">Producto para destacar</span>
-          <select className={INPUT} value={adding} onChange={(event) => setAdding(event.target.value)}>
-            <option value="">Elegí un producto para destacar…</option>
-            {catalog.lines.map((line) => {
-              const options = available.filter((product) => product.line === line.slug)
-              if (options.length === 0) return null
-              return (
-                <optgroup key={line.slug} label={line.name}>
-                  {options.map((product) => (
-                    <option key={product.id} value={product.id}>
-                      {product.name}
-                    </option>
-                  ))}
-                </optgroup>
-              )
-            })}
-          </select>
-        </label>
-        <button type="submit" className={PRIMARY} disabled={!adding}>
-          <Star className="size-4" /> Destacar
-        </button>
+    <Drawer
+      title={item ? 'Editar destacado' : 'Nuevo destacado'}
+      onClose={close}
+      footer={
+        <>
+          <button type="submit" form="featured-form" className={PRIMARY} disabled={saving || uploading}>
+            {saving ? <LoaderCircle className="size-4 animate-spin" /> : <Check className="size-4" />}
+            {uploading ? 'Esperando la foto…' : item ? 'Guardar cambios' : 'Agregar destacado'}
+          </button>
+          <button type="button" className={SECONDARY} onClick={close}>
+            Cancelar
+          </button>
+          {item && (
+            <button type="button" className={`${SECONDARY} ml-auto hover:border-sun-2 hover:text-sun-2`} onClick={() => onDelete(item)}>
+              <Trash2 className="size-4" /> Quitar
+            </button>
+          )}
+        </>
+      }
+    >
+      <form id="featured-form" className="space-y-5" onSubmit={submit} noValidate>
+        <div>
+          <p className="text-sm font-semibold">Foto</p>
+          <p className="mt-0.5 mb-2 text-sm text-ash">Se ve sola en el carrete, sin nombre ni precio.</p>
+          <PhotoPicker photos={draft.photo ? [draft.photo] : []} setPhotos={setPhotos} name={product?.name ?? 'destacado'} multiple={false} onUploadingChange={setUploading} />
+          {errors.photo && <p className="mt-2 text-sm text-sun-2">{errors.photo}</p>}
+        </div>
+        <Field label="Producto que se abre al tocarla" error={errors.product} hint={product ? `${formatPrice(product.price)}${product.hidden ? ' · está oculto: la foto no se va a ver en la web' : ''}` : 'Al tocar la foto se abre la ficha de este producto.'}>
+          <ProductSelect
+            catalog={catalog}
+            value={draft.product}
+            onChange={set('product')}
+            placeholder="Elegí un producto…"
+            taken={new Set(catalog.featured.filter((other) => other !== item).map((other) => other.product))}
+          />
+        </Field>
       </form>
+    </Drawer>
+  )
+}
 
-      {featured.length === 0 ? (
-        <p className="py-16 text-center text-ash">Todavía no hay destacados. Elegí un producto arriba o activá “Destacado” al editar uno.</p>
+function FeaturedTab({ catalog, onEdit, onNew, onChange }) {
+  const byId = useMemo(() => Object.fromEntries(catalog.products.map((product) => [product.id, product])), [catalog.products])
+  const items = catalog.featured
+
+  return (
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="max-w-xl text-sm text-ash">
+          Fotos del carrete del inicio, abajo de “Sobre mí”, en este orden. Se ven solas, sin precio ni descripción; al tocarlas se abre el producto que elijas.
+        </p>
+        <button type="button" className={PRIMARY} onClick={onNew} disabled={catalog.products.length === 0}>
+          <Plus className="size-4" /> Nuevo destacado
+        </button>
+      </div>
+
+      {items.length === 0 ? (
+        <p className="py-16 text-center text-ash">Todavía no hay destacados. Si no hay ninguno, el carrete no se muestra.</p>
       ) : (
         <ul className="mt-5 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-coal">
-          {featured.map((product, i) => (
-            <Row
-              key={product.id}
-              thumb={<Thumb photo={product.photos[0]} art={lineBySlug[product.line]?.art} />}
-              title={product.name}
-              subtitle={`${lineBySlug[product.line]?.name} · ${formatPrice(product.price)}${product.photos.length ? '' : ' · sin fotos, se ve el dibujo'}`}
-              badges={
-                <>
-                  {product.hidden && <Badge>Oculto: no se ve en la web</Badge>}
-                  {product.soldOut && <Badge tone="sun">Sin stock</Badge>}
-                </>
-              }
-              actions={
-                <>
-                  <MoveButtons
-                    name={product.name}
-                    index={i}
-                    total={featured.length}
-                    onMove={(step) => onChange(swap(catalog.featured, i, i + step), 'Orden guardado.')}
-                  />
-                  <button
-                    type="button"
-                    aria-label={`Quitar ${product.name} de destacados`}
-                    title="Quitar de destacados"
-                    className={ICON_BUTTON}
-                    onClick={() => onChange(catalog.featured.filter((id) => id !== product.id), `Quitaste “${product.name}” de destacados.`)}
-                  >
-                    <X className="size-4" />
-                  </button>
-                </>
-              }
-              onEdit={() => onEdit(product)}
-            />
-          ))}
+          {items.map((item, i) => {
+            const product = byId[item.product]
+            return (
+              <Row
+                key={item.photo}
+                thumb={<Thumb photo={item.photo} />}
+                title={product?.name ?? 'Producto borrado'}
+                subtitle={`Al tocarla abre: ${product?.name ?? '—'}`}
+                badges={product?.hidden && <Badge>Producto oculto: no se ve en la web</Badge>}
+                actions={
+                  <>
+                    <MoveButtons name={`destacado ${i + 1}`} index={i} total={items.length} onMove={(step) => onChange(swap(items, i, i + step), 'Orden guardado.')} />
+                    <button
+                      type="button"
+                      aria-label={`Quitar destacado ${i + 1}`}
+                      title="Quitar de destacados"
+                      className={ICON_BUTTON}
+                      onClick={() => window.confirm('¿Quitar esta foto de destacados?') && onChange(items.filter((other) => other !== item), 'Quitaste el destacado.')}
+                    >
+                      <X className="size-4" />
+                    </button>
+                  </>
+                }
+                onEdit={() => onEdit(item)}
+              />
+            )
+          })}
         </ul>
       )}
     </>
+  )
+}
+
+function AboutTab({ catalog, onSave, onDirtyChange }) {
+  const initial = catalog.site
+  const [draft, setDraft] = useState(initial)
+  const [uploading, setUploading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+  const dirty = JSON.stringify(draft) !== JSON.stringify(initial)
+  const set = (field) => (value) => setDraft((current) => ({ ...current, [field]: value }))
+  const setPoster = useMemo(() => (update) => setDraft((current) => ({ ...current, poster: update(current.poster ? [current.poster] : [])[0] ?? null })), [])
+
+  useEffect(() => {
+    onDirtyChange(dirty)
+  }, [dirty, onDirtyChange])
+
+  // Avisa antes de cerrar la pestaña con cambios sin guardar.
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (event) => event.preventDefault()
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
+
+  async function submit(event) {
+    event.preventDefault()
+    if (!draft.bio.trim()) return setError('La biografía no puede quedar vacía.')
+    setError(null)
+    setSaving(true)
+    await onSave({ ...draft, bio: draft.bio.trim() })
+    setSaving(false)
+  }
+
+  return (
+    <form className="space-y-6" onSubmit={submit} noValidate>
+      <p className="text-sm text-ash">El texto y el video de la sección “Sobre mí” del inicio.</p>
+
+      <Field label="Biografía" error={error} hint={`${draft.bio.trim().split(/\s+/).filter(Boolean).length} palabras. Se va iluminando palabra por palabra al bajar.`}>
+        <textarea className={`${INPUT} min-h-40 resize-y text-base leading-relaxed`} value={draft.bio} onChange={(event) => set('bio')(event.target.value)} />
+      </Field>
+
+      <div className="grid gap-6 sm:grid-cols-[1fr_14rem]">
+        <div>
+          <p className="text-sm font-semibold">Video</p>
+          <p className="mt-0.5 mb-2 text-sm text-ash">Sin video propio se muestra el original.</p>
+          <VideoPicker video={draft.video} poster={draft.poster} setVideo={set('video')} name="sobre-mi" onUploadingChange={setUploading} />
+        </div>
+        <div>
+          <p className="text-sm font-semibold">Portada del video</p>
+          <p className="mt-0.5 mb-2 text-sm text-ash">Opcional. Se ve mientras carga.</p>
+          <PhotoPicker photos={draft.poster ? [draft.poster] : []} setPhotos={setPoster} name="portada-video" multiple={false} onUploadingChange={setUploading} />
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
+        <button type="submit" className={PRIMARY} disabled={!dirty || saving || uploading}>
+          {saving ? <LoaderCircle className="size-4 animate-spin" /> : <Check className="size-4" />}
+          {uploading ? 'Esperando el archivo…' : 'Guardar cambios'}
+        </button>
+        {dirty && (
+          <button type="button" className={SECONDARY} onClick={() => setDraft(initial)}>
+            Descartar
+          </button>
+        )}
+      </div>
+    </form>
   )
 }
 
@@ -453,10 +670,12 @@ function Panel({ user }) {
   const [editing, setEditing] = useState(null)
   const queue = useRef(Promise.resolve())
   const latest = useRef(null)
+  const aboutDirty = useRef(false)
+  const setAboutDirty = useCallback((value) => (aboutDirty.current = value), [])
 
   useEffect(() => {
     document.title = 'Panel · CONEJO.08'
-    loadCatalog().then((data) => setCatalog(withFeatured(data)), (error) => setLoadError(error.message))
+    loadCatalog().then((data) => setCatalog(normalize(data)), (error) => setLoadError(error.message))
   }, [])
 
   useEffect(() => {
@@ -486,7 +705,7 @@ function Panel({ user }) {
           async (error) => {
             latest.current = FAILED
             setStatus({ type: 'error', text: error.message })
-            setCatalog(withFeatured(await loadCatalog().catch(() => next)))
+            setCatalog(normalize(await loadCatalog().catch(() => next)))
             return false
           },
         ),
@@ -495,27 +714,27 @@ function Panel({ user }) {
     return run
   }
 
-  function saveProduct(saved, isNew, featured) {
+  function saveProduct(saved, isNew, featuredPhoto) {
     let products = catalog.products.map((product) => (product.id === saved.id ? saved : product))
     if (isNew) {
       const last = catalog.products.findLastIndex((product) => product.line === saved.line)
       products = [...catalog.products]
       products.splice(last === -1 ? products.length : last + 1, 0, saved)
     }
-    // Si lo marcó como destacado, va al final del carrete; si ya estaba, conserva su lugar.
-    const featuredIds = !featured
-      ? catalog.featured.filter((id) => id !== saved.id)
-      : catalog.featured.includes(saved.id)
-        ? catalog.featured
-        : [...catalog.featured, saved.id]
-    return commit({ ...catalog, products, featured: featuredIds }, isNew ? `Agregaste "${saved.name}".` : `Guardaste "${saved.name}".`)
+    // Una sola foto en el carrete por producto: si ya estaba, conserva su lugar; si no, va al final.
+    const position = catalog.featured.findIndex((item) => item.product === saved.id)
+    const featured = catalog.featured.filter((item) => item.product !== saved.id)
+    if (featuredPhoto) featured.splice(position === -1 ? featured.length : position, 0, { photo: featuredPhoto, product: saved.id })
+    return commit({ ...catalog, products, featured }, isNew ? `Agregaste "${saved.name}".` : `Guardaste "${saved.name}".`)
   }
 
   function deleteProduct(product) {
-    if (!window.confirm(`¿Borrar "${product.name}"? Se borran también sus fotos. No se puede deshacer.`)) return
+    const inFeatured = catalog.featured.filter((item) => item.product === product.id).length
+    const extra = inFeatured ? ` También se quita${inFeatured === 1 ? ' su foto' : `n sus ${inFeatured} fotos`} de destacados.` : ''
+    if (!window.confirm(`¿Borrar "${product.name}"? Se borran también sus fotos.${extra} No se puede deshacer.`)) return
     setEditing(null)
     commit(
-      { ...catalog, products: catalog.products.filter(({ id }) => id !== product.id), featured: catalog.featured.filter((id) => id !== product.id) },
+      { ...catalog, products: catalog.products.filter(({ id }) => id !== product.id), featured: catalog.featured.filter((item) => item.product !== product.id) },
       `Borraste "${product.name}".`,
     )
   }
@@ -529,6 +748,24 @@ function Panel({ user }) {
     if (!window.confirm(`¿Borrar la línea "${line.name}"? No se puede deshacer.`)) return
     setEditing(null)
     commit({ ...catalog, lines: catalog.lines.filter(({ slug }) => slug !== line.slug) }, `Borraste la línea "${line.name}".`)
+  }
+
+  function saveFeatured(saved, previous) {
+    const featured = previous ? catalog.featured.map((item) => (item === previous ? saved : item)) : [...catalog.featured, saved]
+    return commit({ ...catalog, featured }, previous ? 'Guardaste el destacado.' : 'Agregaste un destacado.')
+  }
+
+  function deleteFeatured(item) {
+    if (!window.confirm('¿Quitar esta foto de destacados?')) return
+    setEditing(null)
+    commit({ ...catalog, featured: catalog.featured.filter((other) => other !== item) }, 'Quitaste el destacado.')
+  }
+
+  const saveSite = (site) => commit({ ...catalog, site }, 'Guardaste “Sobre mí”.')
+  const confirmAboutLeave = () => {
+    if (!confirmDiscard(aboutDirty.current)) return false
+    aboutDirty.current = false
+    return true
   }
 
   if (!catalog) {
@@ -551,6 +788,7 @@ function Panel({ user }) {
     { id: 'products', label: 'Productos', count: catalog.products.length },
     { id: 'lines', label: 'Líneas', count: catalog.lines.length },
     { id: 'featured', label: 'Destacados', count: catalog.featured.length },
+    { id: 'about', label: 'Sobre mí' },
   ]
 
   return (
@@ -579,18 +817,18 @@ function Panel({ user }) {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-8">
-        <nav aria-label="Secciones del panel" className="mb-6 flex gap-2">
+        <nav aria-label="Secciones del panel" className="mb-6 flex flex-wrap gap-2">
           {tabs.map(({ id, label, count }) => (
             <button
               key={id}
               type="button"
               aria-current={tab === id ? 'page' : undefined}
               className={`relative rounded-full border px-4 py-2 text-sm transition-colors ${tab === id ? 'border-bone font-semibold text-ink' : 'border-line text-ash hover:border-ash hover:text-bone'}`}
-              onClick={() => setTab(id)}
+              onClick={() => (tab !== 'about' || id === 'about' || confirmAboutLeave()) && setTab(id)}
             >
               {tab === id && <motion.span layoutId="admin-tab" className="absolute inset-0 rounded-full bg-bone" transition={{ type: 'spring', stiffness: 380, damping: 30 }} />}
               <span className="relative">
-                {label} <span className="tabular-nums opacity-60">{count}</span>
+                {label} {count !== undefined && <span className="tabular-nums opacity-60">{count}</span>}
               </span>
             </button>
           ))}
@@ -606,9 +844,12 @@ function Panel({ user }) {
         ) : tab === 'featured' ? (
           <FeaturedTab
             catalog={catalog}
-            onEdit={(product) => setEditing({ kind: 'product', item: product })}
+            onEdit={(item) => setEditing({ kind: 'featured', item })}
+            onNew={() => setEditing({ kind: 'featured', item: null })}
             onChange={(featured, message) => commit({ ...catalog, featured }, message)}
           />
+        ) : tab === 'about' ? (
+          <AboutTab key={JSON.stringify(catalog.site)} catalog={catalog} onSave={saveSite} onDirtyChange={setAboutDirty} />
         ) : (
           <LinesTab
             catalog={catalog}
@@ -628,6 +869,9 @@ function Panel({ user }) {
           onDelete={deleteProduct}
           onClose={() => setEditing(null)}
         />
+      )}
+      {editing?.kind === 'featured' && (
+        <FeaturedEditor item={editing.item} catalog={catalog} onSave={saveFeatured} onDelete={deleteFeatured} onClose={() => setEditing(null)} />
       )}
       {editing?.kind === 'line' && <LineEditor line={editing.item} catalog={catalog} onSave={saveLine} onDelete={deleteLine} onClose={() => setEditing(null)} />}
 

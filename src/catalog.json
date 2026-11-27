@@ -761,12 +761,10 @@
       "soldOut": false
     }
   ],
-  "featured": [
-    "rinonera-clasica",
-    "mochila-diaria",
-    "bolso-fin-de-semana",
-    "funda-criolla",
-    "matero-clasico",
-    "bandolera-clasica"
-  ]
+  "featured": [],
+  "site": {
+    "bio": "Hago marroquinería artesanal desde Salta Capital. Riñoneras, mochilas, bolsos, fundas de guitarra, materos y más: cada pieza está hecha a mano, una por una. Si buscás el tuyo, escribime, atiendo todos los días.",
+    "video": null,
+    "poster": null
+  }
 }

@@ -6,13 +6,19 @@ import {
   CATALOG_PATH,
   MAX_CATALOG_BYTES,
   MAX_PHOTO_BYTES,
+  MAX_VIDEO_BYTES,
   PHOTOS_DIR,
   PHOTO_FILE,
+  VIDEOS_DIR,
+  VIDEO_FILE,
   formatCatalog,
+  isMp4,
   isWebp,
   photoFileName,
   usedPhotos,
+  usedVideos,
   validateCatalog,
+  videoFileName,
 } from './worker/catalog-rules.js'
 
 // API del panel con `npm run dev`: escribe directo en src/catalog.json y public/productos/.
@@ -21,6 +27,7 @@ import {
 const ROOT = path.dirname(fileURLToPath(import.meta.url))
 const CATALOG_FILE = path.join(ROOT, CATALOG_PATH)
 const PHOTOS = path.join(ROOT, PHOTOS_DIR)
+const VIDEOS = path.join(ROOT, VIDEOS_DIR)
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -48,12 +55,14 @@ function readBody(req, limit) {
 // Mismo identificador que usa git (y el Worker), para detectar si el archivo cambió por otro lado.
 const versionOf = (text) => createHash('sha1').update(`blob ${Buffer.byteLength(text)}\0`).update(text).digest('hex')
 
-async function removeUnusedPhotos(catalog) {
-  const used = usedPhotos(catalog)
-  const files = await readdir(PHOTOS).catch(() => [])
-  await Promise.all(
-    files.filter((file) => PHOTO_FILE.test(file) && !used.has(`/productos/${file}`)).map((file) => rm(path.join(PHOTOS, file), { force: true })),
-  )
+async function removeUnused(dir, pattern, url, used) {
+  const files = await readdir(dir).catch(() => [])
+  await Promise.all(files.filter((file) => pattern.test(file) && !used.has(`${url}${file}`)).map((file) => rm(path.join(dir, file), { force: true })))
+}
+
+async function removeUnusedFiles(catalog) {
+  await removeUnused(PHOTOS, PHOTO_FILE, '/productos/', usedPhotos(catalog))
+  await removeUnused(VIDEOS, VIDEO_FILE, '/videos/', usedVideos(catalog))
 }
 
 const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1'])
@@ -104,7 +113,7 @@ async function handle(req) {
     const temp = `${CATALOG_FILE}.tmp`
     await writeFile(temp, text)
     await rename(temp, CATALOG_FILE)
-    await removeUnusedPhotos(catalog)
+    await removeUnusedFiles(catalog)
     // En Windows git deja los archivos con CRLF: eso solo no cuenta como cambio.
     return { catalog, version: versionOf(text), changed: text !== current.replace(/\r\n/g, '\n') }
   }
@@ -117,6 +126,16 @@ async function handle(req) {
     await mkdir(PHOTOS, { recursive: true })
     await writeFile(path.join(PHOTOS, file), body)
     return { path: `/productos/${file}`, blob: null }
+  }
+
+  if (route === 'POST /videos') {
+    if (req.headers['content-type'] !== 'video/mp4') throw new HttpError(415, 'El video tiene que ser MP4.')
+    const body = await readBody(req, MAX_VIDEO_BYTES)
+    if (!isMp4(new Uint8Array(body))) throw new HttpError(415, 'El archivo no es un video MP4.')
+    const file = videoFileName(url.searchParams.get('name'))
+    await mkdir(VIDEOS, { recursive: true })
+    await writeFile(path.join(VIDEOS, file), body)
+    return { path: `/videos/${file}`, blob: null }
   }
 
   throw new HttpError(404, 'No existe esa ruta.')

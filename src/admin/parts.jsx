@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
-import { ArrowLeft, ArrowRight, ImagePlus, LoaderCircle, Star, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Film, ImagePlus, LoaderCircle, Star, X } from 'lucide-react'
 import { DEFAULT_ART } from '../data'
-import { photoFallback, photoSrc, uploadPhoto } from './api'
+import { MAX_VIDEO_MB, photoFallback, photoSrc, uploadPhoto, uploadVideo, videoFallback, videoSrc } from './api'
 
 export const INPUT =
   'w-full rounded-xl border border-line bg-ink px-3.5 py-2.5 text-bone placeholder:text-ash/60 transition-colors hover:border-ash focus:border-bone focus:outline-none'
@@ -118,6 +118,12 @@ export function PhotoPicker({ photos, setPhotos, name, multiple = true, onUpload
   useEffect(() => {
     onUploadingChange?.(uploading > 0)
   }, [uploading, onUploadingChange])
+
+  // Si se saca de pantalla justo al terminar de subir (por ejemplo, porque la foto nueva lo reemplaza),
+  // avisa igual que ya no está subiendo, para que el formulario no quede esperando.
+  const report = useRef(onUploadingChange)
+  report.current = onUploadingChange
+  useEffect(() => () => report.current?.(false), [])
 
   async function addFiles(fileList) {
     const files = [...fileList].slice(0, multiple ? undefined : 1)
@@ -235,6 +241,96 @@ export function PhotoPicker({ photos, setPhotos, name, multiple = true, onUpload
           {error}
         </p>
       ))}
+    </div>
+  )
+}
+
+// Sube el video de "Sobre mí" (MP4) y lo muestra. Uno solo: para cambiarlo, se sube otro encima.
+export function VideoPicker({ video, poster, setVideo, name, onUploadingChange }) {
+  const input = useRef(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setError] = useState(null)
+  const [dragging, setDragging] = useState(false)
+
+  useEffect(() => {
+    onUploadingChange?.(uploading)
+  }, [uploading, onUploadingChange])
+
+  const report = useRef(onUploadingChange)
+  report.current = onUploadingChange
+  useEffect(() => () => report.current?.(false), [])
+
+  async function addFile(file) {
+    if (!file) return
+    setError(null)
+    setUploading(true)
+    try {
+      setVideo(await uploadVideo(file, name || 'video'))
+    } catch (error) {
+      setError(error.message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div>
+      {video && (
+        <div className="mb-3 overflow-hidden rounded-xl border border-line bg-ink">
+          <video
+            key={video}
+            src={videoSrc(video)}
+            poster={poster ? photoSrc(poster) : undefined}
+            onError={(event) => videoFallback(event, video)}
+            className="mx-auto block max-h-96 w-auto"
+            controls
+            muted
+            playsInline
+            preload="metadata"
+          />
+          <div className="flex items-center justify-between p-1 pl-3">
+            <span className="text-sm text-ash">Video actual</span>
+            <button type="button" aria-label="Quitar video" title="Quitar video (vuelve el original)" className={`${ICON_BUTTON} hover:bg-sun-2 hover:text-bone`} onClick={() => setVideo(null)}>
+              <X className="size-4" />
+            </button>
+          </div>
+        </div>
+      )}
+      <button
+        type="button"
+        disabled={uploading}
+        className={`flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors ${dragging ? 'border-sun-1 bg-sun-1/10' : 'border-line hover:border-ash'}`}
+        onClick={() => input.current.click()}
+        onDragOver={(event) => {
+          event.preventDefault()
+          setDragging(true)
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(event) => {
+          event.preventDefault()
+          setDragging(false)
+          addFile(event.dataTransfer.files[0])
+        }}
+      >
+        {uploading ? <LoaderCircle className="size-7 animate-spin text-sun-1" /> : <Film className="size-7 text-ash" />}
+        <span className="text-sm font-semibold">{uploading ? 'Subiendo el video…' : video ? 'Cambiar video' : 'Subir video'}</span>
+        <span className="text-xs text-ash">MP4, hasta {MAX_VIDEO_MB} MB. Vertical (9:16) queda mejor.</span>
+      </button>
+      <input
+        ref={input}
+        type="file"
+        accept="video/mp4"
+        className="hidden"
+        onChange={(event) => {
+          addFile(event.target.files[0])
+          event.target.value = ''
+        }}
+      />
+      {uploadError && (
+        <p role="alert" className="mt-2 text-sm text-sun-2">
+          {uploadError}
+        </p>
+      )}
     </div>
   )
 }

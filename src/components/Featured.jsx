@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { CatalogCard } from './Catalog'
-import { SectionHeading } from './ui'
+import { useProductModal } from './ProductModal'
+import { MagneticLink, SectionHeading } from './ui'
 import { FEATURED } from '../data'
 
 const AUTOPLAY_MS = 4500
@@ -11,6 +11,27 @@ const IDLE_AFTER_TOUCH_MS = 8000
 
 const ARROW =
   'grid size-11 place-items-center rounded-full border border-bone transition-colors hover:bg-bone hover:text-ink disabled:pointer-events-none disabled:opacity-25'
+
+// Solo la foto: sin nombre ni precio. Al tocarla se abre la ficha del producto.
+function FeaturedPhoto({ photo, item }) {
+  const openProduct = useProductModal()
+  return (
+    <button
+      type="button"
+      aria-label={`Ver ${item.name}`}
+      className="group relative block aspect-square w-full overflow-hidden rounded-2xl border border-line bg-coal transition-colors hover:border-ash"
+      onClick={() => openProduct(item, { photo })}
+    >
+      <img src={photo} alt={item.name} loading="lazy" draggable={false} className="size-full object-cover grayscale transition duration-700 group-hover:scale-105 group-hover:grayscale-0" />
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent px-4 pt-10 pb-4 text-left text-sm font-semibold opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+      >
+        Ver producto
+      </span>
+    </button>
+  )
+}
 
 function Carousel({ items }) {
   const track = useRef(null)
@@ -65,7 +86,7 @@ function Carousel({ items }) {
     return () => clearInterval(timer)
   }, [reducedMotion, step])
 
-  const arrows = (
+  const arrows = items.length > 4 && (
     <div className="hidden shrink-0 gap-2 sm:flex">
       <button
         type="button"
@@ -96,11 +117,25 @@ function Carousel({ items }) {
 
   return (
     <>
-      <SectionHeading action={arrows}>Destacados</SectionHeading>
+      <SectionHeading
+        action={
+          <div className="flex shrink-0 items-center gap-3">
+            {arrows}
+            <MagneticLink
+              href="#/productos"
+              className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-bone px-5 py-2.5 text-sm font-medium transition-colors hover:bg-bone hover:text-ink"
+            >
+              Ver más <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />
+            </MagneticLink>
+          </div>
+        }
+      >
+        Lo último
+      </SectionHeading>
 
       <ul
         ref={track}
-        aria-label="Productos destacados"
+        aria-label="Lo último"
         className="no-scrollbar -mx-4 mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 py-2 sm:-mx-8 sm:mt-10 sm:scroll-px-8 sm:gap-5 sm:px-8"
         onScroll={updateEdges}
         onPointerEnter={(event) => event.pointerType === 'mouse' && (hovering.current = true)}
@@ -109,16 +144,16 @@ function Carousel({ items }) {
         onWheel={touched}
         onTouchStart={touched}
       >
-        {items.map((item, i) => (
+        {items.map((entry, i) => (
           <motion.li
-            key={item.id}
+            key={entry.photo}
             className="w-[72%] shrink-0 snap-start sm:w-[calc((100%-2.5rem)/3)] lg:w-[calc((100%-3.75rem)/4)]"
             initial={{ opacity: 0, y: 60, rotate: i % 2 ? 2.5 : -2.5 }}
             whileInView={{ opacity: 1, y: 0, rotate: 0 }}
             viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.8, delay: Math.min(i, 3) * 0.09, ease: [0.22, 1, 0.36, 1] }}
           >
-            <CatalogCard item={item} />
+            <FeaturedPhoto {...entry} />
           </motion.li>
         ))}
       </ul>
@@ -126,11 +161,11 @@ function Carousel({ items }) {
   )
 }
 
-// Carrete de productos destacados, abajo de "Sobre mí". Se eligen y ordenan desde el panel (pestaña Destacados).
+// Carrete de fotos destacadas, abajo de "Sobre mí". Se cargan y ordenan desde el panel (pestaña Destacados).
 export default function Featured() {
   if (FEATURED.length === 0) return null
   return (
-    <section id="destacados" className="mx-auto max-w-7xl px-4 pb-24 sm:px-8 sm:pb-32">
+    <section id="destacados" className="mx-auto max-w-7xl px-4 pb-20 sm:px-8 sm:pb-28">
       <Carousel items={FEATURED} />
     </section>
   )

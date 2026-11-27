@@ -11,8 +11,8 @@
 // GITHUB_REPO y GITHUB_BRANCH están en wrangler.jsonc.
 
 import { AccessError, verifyAccess } from './access.js'
-import { MAX_CATALOG_BYTES, MAX_PHOTO_BYTES, isWebp, photoFileName, validateCatalog } from './catalog-rules.js'
-import { GitHubError, readCatalog, readPhoto, saveCatalog, uploadBlob } from './github.js'
+import { MAX_CATALOG_BYTES, MAX_PHOTO_BYTES, MAX_VIDEO_BYTES, isMp4, isWebp, photoFileName, validateCatalog, videoFileName } from './catalog-rules.js'
+import { GitHubError, readCatalog, readPhoto, readVideo, saveCatalog, uploadBlob } from './github.js'
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -48,6 +48,14 @@ async function handle(request, env, url) {
     const file = await readPhoto(env, photo[1])
     return new Response(file.body, {
       headers: { ...SECURITY_HEADERS, 'Content-Type': 'image/webp', 'Cache-Control': 'private, max-age=600' },
+    })
+  }
+  const video = request.method === 'GET' && url.pathname.match(/^\/api\/admin\/videos\/([^/]+)$/)
+  if (video) {
+    await verifyAccess(request, env)
+    const file = await readVideo(env, video[1])
+    return new Response(file.body, {
+      headers: { ...SECURITY_HEADERS, 'Content-Type': 'video/mp4', 'Cache-Control': 'private, max-age=600' },
     })
   }
 
@@ -89,6 +97,14 @@ async function handle(request, env, url) {
     if (!isWebp(bytes)) throw new HttpError(415, 'El archivo no es una imagen WebP.')
     const blob = await uploadBlob(env, bytes)
     return { path: `/productos/${photoFileName(url.searchParams.get('name'))}`, blob }
+  }
+
+  if (route === 'POST /videos') {
+    if (request.headers.get('Content-Type') !== 'video/mp4') throw new HttpError(415, 'El video tiene que ser MP4.')
+    const bytes = await readBody(request, MAX_VIDEO_BYTES)
+    if (!isMp4(bytes)) throw new HttpError(415, 'El archivo no es un video MP4.')
+    const blob = await uploadBlob(env, bytes)
+    return { path: `/videos/${videoFileName(url.searchParams.get('name'))}`, blob }
   }
 
   throw new HttpError(404, 'No existe esa ruta.')

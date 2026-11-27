@@ -7,7 +7,7 @@
 // Las fotos se suben antes de guardar como "blobs" sueltos de git: todavía no forman parte de ningún
 // commit (no disparan builds). Recién al guardar el catálogo entran al commit las que se usan.
 
-import { CATALOG_PATH, PHOTOS_DIR, PHOTO_FILE, PHOTO_PATH, formatCatalog, usedPhotos } from './catalog-rules.js'
+import { CATALOG_PATH, PHOTOS_DIR, PHOTO_FILE, PHOTO_PATH, VIDEOS_DIR, VIDEO_FILE, VIDEO_PATH, formatCatalog, usedPhotos, usedVideos } from './catalog-rules.js'
 
 export class GitHubError extends Error {
   constructor(status, message) {
@@ -100,6 +100,22 @@ export async function readPhoto(env, file) {
   })
 }
 
+// Lo mismo para el video de "Sobre mí".
+export async function readVideo(env, file) {
+  if (!VIDEO_FILE.test(file)) throw new GitHubError(404, 'No existe ese video.')
+  const { branch } = config(env)
+  return github(env, `/contents/${VIDEOS_DIR}/${file}?ref=${encodeURIComponent(branch)}`, {
+    accept: 'application/vnd.github.raw',
+    notFound: 'No existe ese video.',
+  })
+}
+
+// Archivos que se suben desde el panel: fotos en public/productos y videos en public/videos.
+const MEDIA = [
+  { dir: PHOTOS_DIR, url: '/productos/', path: PHOTO_PATH, file: PHOTO_FILE, used: usedPhotos },
+  { dir: VIDEOS_DIR, url: '/videos/', path: VIDEO_PATH, file: VIDEO_FILE, used: usedVideos },
+]
+
 async function attemptSave(env, { catalog, version, uploads, author }) {
   const { branch } = config(env)
   const ref = await json(await github(env, `/git/ref/heads/${encodeURIComponent(branch)}`))
@@ -120,18 +136,20 @@ async function attemptSave(env, { catalog, version, uploads, author }) {
   const changes = []
   if (newVersion !== current) changes.push({ path: CATALOG_PATH, mode: '100644', type: 'blob', content: text })
 
-  const used = usedPhotos(catalog)
-  for (const photo of used) {
-    const path = `${PHOTOS_DIR}/${photo.match(PHOTO_PATH)[1]}`
-    if (files.has(path)) continue
-    const sha = uploads?.[photo]
-    if (typeof sha !== 'string' || !SHA.test(sha)) throw new GitHubError(400, 'Falta una foto nueva. Quitala y volvé a subirla.')
-    changes.push({ path, mode: '100644', type: 'blob', sha })
-  }
-  // Borra las fotos del panel que ya no usa ningún producto ni línea.
-  for (const path of files.keys()) {
-    const name = path.startsWith(`${PHOTOS_DIR}/`) ? path.slice(PHOTOS_DIR.length + 1) : null
-    if (name && PHOTO_FILE.test(name) && !used.has(`/productos/${name}`)) changes.push({ path, mode: '100644', type: 'blob', sha: null })
+  for (const media of MEDIA) {
+    const used = media.used(catalog)
+    for (const item of used) {
+      const path = `${media.dir}/${item.match(media.path)[1]}`
+      if (files.has(path)) continue
+      const sha = uploads?.[item]
+      if (typeof sha !== 'string' || !SHA.test(sha)) throw new GitHubError(400, 'Falta un archivo nuevo (foto o video). Quitalo y volvé a subirlo.')
+      changes.push({ path, mode: '100644', type: 'blob', sha })
+    }
+    // Borra los archivos del panel que ya no usa nada del catálogo.
+    for (const path of files.keys()) {
+      const name = path.startsWith(`${media.dir}/`) ? path.slice(media.dir.length + 1) : null
+      if (name && media.file.test(name) && !used.has(`${media.url}${name}`)) changes.push({ path, mode: '100644', type: 'blob', sha: null })
+    }
   }
 
   if (changes.length === 0) return { version: newVersion, changed: false }
@@ -141,7 +159,7 @@ async function attemptSave(env, { catalog, version, uploads, author }) {
     newTree = await json(await github(env, '/git/trees', { method: 'POST', body: { base_tree: head.tree.sha, tree: changes } }))
   } catch (error) {
     // Un blob que GitHub ya no tiene (por ejemplo, una foto subida hace semanas y nunca guardada).
-    if (error.githubStatus === 422) throw new GitHubError(400, 'Una de las fotos nuevas ya no está disponible. Quitala y volvé a subirla.')
+    if (error.githubStatus === 422) throw new GitHubError(400, 'Una de las fotos o videos nuevos ya no está disponible. Quitalo y volvé a subirlo.')
     throw error
   }
   const message = `Panel: actualizar catálogo\n\nCambio hecho desde el panel por ${author.split('@')[0]}.`

@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { InstagramIcon, SectionHeading, WhatsAppIcon } from './ui'
-import { INSTAGRAM_URL, WHATSAPP_URL } from '../data'
-import video from '../assets/yo-web.mp4'
-import poster from '../assets/yo-portada-web.jpg'
+import { INSTAGRAM_URL, SITE, WHATSAPP_URL } from '../data'
+import defaultVideo from '../assets/yo-web.mp4'
+import defaultPoster from '../assets/yo-portada-web.jpg'
 
+// Se editan desde el panel (pestaña "Sobre mí").
 const TEXT =
+  SITE.bio ||
   'Hago marroquinería artesanal desde Salta Capital. Riñoneras, mochilas, bolsos, fundas de guitarra, materos y más: cada pieza está hecha a mano, una por una. Si buscás el tuyo, escribime, atiendo todos los días.'
+const video = SITE.video ?? defaultVideo
+// Un video nuevo sin portada propia no usa la del video original (sería otra imagen).
+const poster = SITE.poster ?? (SITE.video ? undefined : defaultPoster)
 
 const SOCIALS = [
   { label: 'Instagram', href: INSTAGRAM_URL, Icon: InstagramIcon },
@@ -127,7 +132,7 @@ function VideoCard() {
 export default function About() {
   const paragraph = useRef(null)
   const { scrollYProgress } = useScroll({ target: paragraph, offset: ['start 0.85', 'end 0.55'] })
-  const words = TEXT.split(' ')
+  const words = TEXT.split(/\s+/).filter(Boolean)
 
   return (
     <section id="sobre-mi" className="relative mx-auto max-w-7xl px-4 py-24 sm:px-8 sm:py-32">

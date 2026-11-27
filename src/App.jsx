@@ -12,6 +12,7 @@ import Loader from './components/Loader'
 import Marquee from './components/Marquee'
 import Nav from './components/Nav'
 import Products from './components/Products'
+import { ProductModalProvider } from './components/ProductModal'
 import { CartProvider } from './cart'
 
 function parseRoute() {
@@ -56,26 +57,28 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <CartProvider>
-        <AnimatePresence>{!ready && <Loader onDone={finishLoading} />}</AnimatePresence>
-        <Cursor />
-        <div aria-hidden="true" className="grain pointer-events-none fixed inset-0 z-30 opacity-[0.06]" />
-        <Nav ready={ready} page={route.page} />
-        <Cart />
-        {route.page === 'productos' ? (
-          <main>
-            <Catalog tag={route.tag} />
-          </main>
-        ) : (
-          <main>
-            <Hero play={ready} />
-            <Marquee />
-            <About />
-            <Featured />
-            <Products />
-            <Cta />
-          </main>
-        )}
-        <Footer />
+        <ProductModalProvider>
+          <AnimatePresence>{!ready && <Loader onDone={finishLoading} />}</AnimatePresence>
+          <Cursor />
+          <div aria-hidden="true" className="grain pointer-events-none fixed inset-0 z-30 opacity-[0.06]" />
+          <Nav ready={ready} page={route.page} />
+          <Cart />
+          {route.page === 'productos' ? (
+            <main>
+              <Catalog tag={route.tag} />
+            </main>
+          ) : (
+            <main>
+              <Hero play={ready} />
+              <Marquee />
+              <About />
+              <Featured />
+              <Products />
+              <Cta />
+            </main>
+          )}
+          <Footer />
+        </ProductModalProvider>
       </CartProvider>
     </MotionConfig>
   )

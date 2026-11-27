@@ -61,6 +61,7 @@ export async function saveCatalog(catalog) {
 // Dirección para mostrar una foto en el panel. Las recién subidas se ven desde el navegador, y las
 // ya guardadas que todavía no se publicaron (el deploy tarda un par de minutos) se piden a la API.
 export const photoSrc = (path) => pending.get(path)?.url ?? path
+export const videoSrc = photoSrc
 
 export function photoFallback(event, path) {
   const img = event.currentTarget
@@ -127,4 +128,26 @@ export function parsePrice(value) {
 export function matches(text, query) {
   const clean = (value) => value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
   return clean(text).includes(clean(query.trim()))
+}
+
+// Video de "Sobre mí": se sube tal cual (MP4). Hasta 20 MB.
+export const MAX_VIDEO_MB = 20
+
+export async function uploadVideo(file, name) {
+  if (file.type !== 'video/mp4') throw new Error(`"${file.name}" no es un video MP4.`)
+  if (file.size > MAX_VIDEO_MB * 1024 * 1024) throw new Error(`El video pesa ${(file.size / 1024 / 1024).toFixed(1)} MB y el máximo es ${MAX_VIDEO_MB} MB. Comprimilo y probá de nuevo.`)
+  const data = await request(`/videos?name=${encodeURIComponent(slugify(name))}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'video/mp4' },
+    body: file,
+  })
+  pending.set(data.path, { blob: data.blob, url: URL.createObjectURL(file) })
+  return data.path
+}
+
+export function videoFallback(event, path) {
+  const video = event.currentTarget
+  if (LOCAL || video.dataset.fallback) return
+  video.dataset.fallback = '1'
+  video.src = `/api/admin/videos/${path.split('/').pop()}`
 }

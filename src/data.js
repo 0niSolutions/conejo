@@ -33,8 +33,19 @@ export const CATALOG = catalog.products
   .filter((product) => !product.hidden)
   .map(({ id, line, name, text, price, photos, soldOut }) => ({ id, tag: line, name, text, price, photos, soldOut }))
 
-// Productos destacados del inicio, en el orden elegido en el panel. Los ocultos no aparecen.
-export const FEATURED = (catalog.featured ?? []).map((id) => CATALOG.find((item) => item.id === id)).filter(Boolean)
+// Fotos destacadas del inicio, en el orden elegido en el panel. Cada una abre su producto;
+// si el producto está oculto, la foto no aparece.
+export const FEATURED = (catalog.featured ?? [])
+  .filter((entry) => typeof entry === 'object' && entry?.photo)
+  .map(({ photo, product }) => ({ photo, item: CATALOG.find(({ id }) => id === product) }))
+  .filter(({ item }) => item)
+
+// Texto y video de "Sobre mí". Sin video propio se usa el que viene con la web (src/assets).
+export const SITE = {
+  bio: catalog.site?.bio ?? '',
+  video: catalog.site?.video ?? null,
+  poster: catalog.site?.poster ?? null,
+}
 
 export const STATS = [
   { value: 1015, label: 'seguidores en Instagram' },

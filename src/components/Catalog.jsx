@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { AnimatePresence, motion, useInView } from 'motion/react'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { QuantityStepper } from './Cart'
+import { useProductModal } from './ProductModal'
 import { AskCard, Illustration, useTilt } from './ui'
 import { useCart } from '../cart'
 import { CATALOG, PRODUCTS, formatPrice } from '../data'
@@ -10,7 +11,7 @@ const ACCENTS = ['text-sun-1', 'text-sun-2', 'text-sun-3', 'text-bone']
 
 const ARROW = 'absolute top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-ink/70 text-bone backdrop-blur-sm transition hover:bg-bone hover:text-ink focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
 
-function Gallery({ photos, name }) {
+function Gallery({ photos, name, onOpen }) {
   const [index, setIndex] = useState(0)
   const count = photos.length
   const current = Math.min(index, count - 1)
@@ -18,13 +19,16 @@ function Gallery({ photos, name }) {
 
   return (
     <div className="relative size-full">
+      <button type="button" aria-label={`Ampliar fotos de ${name}`} className="absolute inset-0 cursor-zoom-in" onClick={() => onOpen(current)}>
+        <span className="sr-only">Ampliar</span>
+      </button>
       <AnimatePresence initial={false}>
         <motion.img
           key={photos[current]}
           src={photos[current]}
           alt={count > 1 ? `${name}, foto ${current + 1} de ${count}` : name}
           loading="lazy"
-          className="absolute inset-0 size-full object-cover grayscale transition-[filter,scale] duration-500 group-hover:scale-105 group-hover:grayscale-0"
+          className="pointer-events-none absolute inset-0 size-full object-cover grayscale transition-[filter,scale] duration-500 group-hover:scale-105 group-hover:grayscale-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -39,7 +43,7 @@ function Gallery({ photos, name }) {
           <button type="button" aria-label="Foto siguiente" className={`${ARROW} right-2`} onClick={() => go(1)}>
             <ChevronRight className="size-5" />
           </button>
-          <div aria-hidden="true" className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
             {photos.map((photo, i) => (
               <span key={photo} className={`h-1.5 rounded-full bg-bone transition-all ${i === current ? 'w-4' : 'w-1.5 opacity-50'}`} />
             ))}
@@ -52,6 +56,7 @@ function Gallery({ photos, name }) {
 
 export function CatalogCard({ item }) {
   const { quantities, setQuantity } = useCart()
+  const openProduct = useProductModal()
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.3 })
   const { glow, tilt } = useTilt()
@@ -68,19 +73,25 @@ export function CatalogCard({ item }) {
         />
         <div className="relative grid aspect-square place-items-center overflow-hidden">
           {item.photos.length > 0 ? (
-            <Gallery photos={item.photos} name={item.name} />
+            <Gallery photos={item.photos} name={item.name} onOpen={(index) => openProduct(item, { index })} />
           ) : (
-            <Illustration product={line} play={inView} accent={ACCENTS[CATALOG.indexOf(item) % ACCENTS.length]} />
+            <button type="button" aria-label={`Ver ${item.name}`} className="grid size-full place-items-center" onClick={() => openProduct(item)}>
+              <Illustration product={line} play={inView} accent={ACCENTS[CATALOG.indexOf(item) % ACCENTS.length]} />
+            </button>
           )}
           {item.soldOut && (
-            <span className="absolute top-3 left-3 rounded-full bg-sun-2 px-3 py-1 text-xs font-bold tracking-wide text-bone uppercase">Sin stock</span>
+            <span className="pointer-events-none absolute top-3 left-3 rounded-full bg-sun-2 px-3 py-1 text-xs font-bold tracking-wide text-bone uppercase">Sin stock</span>
           )}
         </div>
         <div className="relative flex flex-1 flex-col border-t border-line p-4 sm:p-5">
           <a href={`#/productos/${line.slug}`} className="w-fit text-xs tracking-wide text-ash uppercase transition-colors hover:text-bone">
             {line.name}
           </a>
-          <h3 className="mt-1 text-base font-bold sm:text-lg">{item.name}</h3>
+          <h3 className="mt-1 text-base font-bold sm:text-lg">
+            <button type="button" className="text-left hover:underline" onClick={() => openProduct(item)}>
+              {item.name}
+            </button>
+          </h3>
           <p className="mt-1 flex-1 text-sm text-ash">{item.text}</p>
           <p className="mt-3 text-lg font-semibold tabular-nums">{formatPrice(item.price)}</p>
           <div className="mt-3 h-11">
